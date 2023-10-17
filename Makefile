@@ -1,0 +1,7 @@
+DOCKER_COMPOSE_FILE_PATH := ./docker-compose.prod.yml
+ENV_FILE_PATH := ./.env
+
+COLOR_RESET = \033[0m
+COLOR_GREEN = \033[32m
+COLOR_YELLOW = \033[33m
+COLOR_WHITE = \033[00m
