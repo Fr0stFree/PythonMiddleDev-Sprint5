@@ -3,7 +3,7 @@ from uuid import UUID
 from faker import Faker
 from faker.providers import lorem, misc, person
 
-from films.models import Film, Genre, ShortPerson
+from films.models import Film, Genre, Person, PersonRoles, PersonWithoutFilms
 
 fake = Faker()
 
@@ -20,8 +20,20 @@ class GenreFactory:
 
 class PersonFactory:
     @classmethod
-    def create_short(cls) -> ShortPerson:
-        return ShortPerson(uuid=fake.uuid4(), full_name=fake.name())
+    def create(cls) -> Person:
+        return Person(
+            uuid=fake.uuid4(),
+            full_name=fake.name(),
+            films=[PersonFactory.create_person_roles() for _ in range(fake.pyint(min_value=1, max_value=4))],
+        )
+
+    @classmethod
+    def create_short(cls) -> PersonWithoutFilms:
+        return PersonWithoutFilms(uuid=fake.uuid4(), full_name=fake.name())
+
+    @staticmethod
+    def create_person_roles() -> PersonRoles:
+        return PersonRoles(uuid=fake.uuid4(), roles=[fake.word() for _ in range(fake.pyint(min_value=1, max_value=3))])
 
 
 class FilmFactory:

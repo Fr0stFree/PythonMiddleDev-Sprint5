@@ -1,4 +1,4 @@
-from typing import Optional, Self
+from typing import Optional
 from uuid import UUID
 
 from elasticsearch import NotFoundError

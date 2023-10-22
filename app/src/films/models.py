@@ -1,7 +1,5 @@
 from uuid import UUID
 
-from pydantic import Field
-
 from core.mixins import CustomBaseModel
 
 
@@ -10,7 +8,7 @@ class Genre(CustomBaseModel):
     name: str
 
 
-class _InnerPersonRoles(CustomBaseModel):
+class PersonRoles(CustomBaseModel):
     uuid: UUID  # film uuid
     roles: list[str]
 
@@ -18,11 +16,12 @@ class _InnerPersonRoles(CustomBaseModel):
 class Person(CustomBaseModel):
     uuid: UUID
     full_name: str
-    films: list[_InnerPersonRoles]
+    films: list[PersonRoles]
 
 
-class _InnerPerson(Person):
-    films: list[UUID] = Field(exclude=True)
+class PersonWithoutFilms(CustomBaseModel):
+    uuid: UUID
+    full_name: str
 
 
 class Film(CustomBaseModel):
@@ -31,6 +30,6 @@ class Film(CustomBaseModel):
     imdb_rating: float
     description: str
     genre: list[Genre]
-    actors: list[_InnerPerson]
-    writers: list[_InnerPerson]
-    directors: list[_InnerPerson]
+    actors: list[PersonWithoutFilms]
+    writers: list[PersonWithoutFilms]
+    directors: list[PersonWithoutFilms]

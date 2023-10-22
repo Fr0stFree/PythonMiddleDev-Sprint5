@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from typing import Generic, Type, TypeVar
 
 import orjson
@@ -25,5 +24,4 @@ class Singleton(Generic[T]):
 class CustomBaseModel(BaseModel):
     class Config:
         json_loads = orjson.loads
-        json_dumps = lambda v, *, default: orjson.dumps(v, default=default).decode()
-
+        json_dumps = lambda v, *, default: orjson.dumps(v, default=default).decode()  # noqa: E731
