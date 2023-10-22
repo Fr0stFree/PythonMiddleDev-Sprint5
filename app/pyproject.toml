@@ -1,0 +1,29 @@
+[tool.isort]
+profile = "black"
+py_version = "310"
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+
+[tool.flake8]
+ignore = ['E231', 'E241', 'W191']
+per-file-ignores = [
+    '__init__.py:F401',
+]
+max-line-length = 120
+count = true
+
+[tool.pytest.ini_options]
+testpaths = ['tests']
+addopts = [
+    '--cache-clear'
+]
+python_files = ['test_*.py']
+cache_dir = "/tests/.pytest_cache"
+asyncio_mode = "auto"
+filterwarnings = "ignore::DeprecationWarning"
+env = [
+    "PYTHONPATH=src"
+]
