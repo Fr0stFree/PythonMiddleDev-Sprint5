@@ -1,0 +1,36 @@
+Что бы сделать дамп ElasticSearch нужно поставить утилиту elastidump:
+https://github.com/elasticsearch-dump/elasticsearch-dump#installing
+
+
+Сдампить все необходимые сущности - данные индекса, маппинг и аналайзер:
+elasticdump \
+  --input=http://localhost:9200/movies \
+  --output=movies_analyzer.json \
+  --type=analyzer
+
+elasticdump \
+  --input=http://localhost:9200/movies \
+  --output=movies_mapping.json \
+  --type=mapping
+
+elasticdump \
+  --input=http://localhost:9200/movies \
+  --output=movies.json \
+  --type=data
+
+
+Восстановить из дампа данные:
+elasticdump \
+  --input=movies_analyzer.json \
+  --output=http://localhost:9200/movies \
+  --type=analyzer
+
+elasticdump \
+  --input=movies_mapping.json \
+  --output=http://localhost:9200/movies \
+  --type=mapping
+
+elasticdump \
+  --input=movies.json \
+  --output=http://localhost:9200/movies \
+  --type=data
