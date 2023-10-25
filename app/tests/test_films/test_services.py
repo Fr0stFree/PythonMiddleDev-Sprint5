@@ -5,7 +5,7 @@ from elastic_transport import ApiResponseMeta
 from elasticsearch import NotFoundError
 from faker import Faker
 
-from films.constants import MOVIES_INDEX_NAME
+from films.constants import FILM_CACHE_EXPIRES, MOVIES_INDEX_NAME
 from films.models import Film
 from films.services import FilmService
 
@@ -24,9 +24,9 @@ class TestFilmService:
 
         assert isinstance(film, Film)
         assert film.uuid == looking_film_id
-        film_service.redis.get.assert_awaited_once_with(str(looking_film_id))
+        film_service.redis.get.assert_awaited_once_with(f"film#{film.uuid}")
         film_service.elastic.get.assert_awaited_once_with(index=MOVIES_INDEX_NAME, uuid=looking_film_id)
-        film_service.redis.set.assert_awaited_once()
+        film_service.redis.set.assert_awaited_once_with(f"film#{film.uuid}", film.model_dump_json(), FILM_CACHE_EXPIRES)
 
     async def test_get_existing_film_from_redis(self, film_service: FilmService) -> None:
         looking_film_id = UUID(fake.uuid4())
@@ -36,7 +36,7 @@ class TestFilmService:
 
         assert isinstance(film, Film)
         assert film.uuid == looking_film_id
-        film_service.redis.get.assert_awaited_once_with(str(looking_film_id))
+        film_service.redis.get.assert_awaited_once_with(f"film#{film.uuid}")
         film_service.elastic.get.assert_not_awaited()
         film_service.redis.set.assert_not_awaited()
 
@@ -48,7 +48,7 @@ class TestFilmService:
         film = await film_service.get_by_id(looking_film_id)
 
         assert film is None
-        film_service.redis.get.assert_awaited_once_with(str(looking_film_id))
+        film_service.redis.get.assert_awaited_once_with(f"film#{looking_film_id}")
         film_service.elastic.get.assert_awaited_once_with(index=MOVIES_INDEX_NAME, uuid=looking_film_id)
         film_service.redis.set.assert_not_awaited()
 
