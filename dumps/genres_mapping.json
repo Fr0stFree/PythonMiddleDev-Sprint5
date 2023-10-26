@@ -1,0 +1,1 @@
+{"genres":{"mappings":{"dynamic":"strict","properties":{"description":{"type":"text","analyzer":"ru_en"},"id":{"type":"keyword"},"name":{"type":"text","fields":{"raw":{"type":"keyword"}},"analyzer":"ru_en"}}}}}
