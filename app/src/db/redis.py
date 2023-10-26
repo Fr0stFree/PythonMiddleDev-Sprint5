@@ -15,3 +15,10 @@ class RedisApp(Singleton):
 
     async def disconnect(self) -> None:
         await self._redis.close()
+
+    def get_client(self):
+        return self._redis
+
+    @classmethod
+    def redis_client(cls):
+        return cls.get_instance().get_client()
