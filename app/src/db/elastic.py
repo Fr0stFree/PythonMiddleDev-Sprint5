@@ -15,3 +15,10 @@ class ElasticApp(Singleton):
 
     async def disconnect(self) -> None:
         await self._es.close()
+
+    def get_client(self):
+        return self._es
+
+    @classmethod
+    def elastic_client(cls):
+        return cls.get_instance().get_client()
