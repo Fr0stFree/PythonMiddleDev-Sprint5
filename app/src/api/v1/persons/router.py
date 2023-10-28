@@ -2,18 +2,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
-from services import FilmService, PersonService
 from api.v1.films.schemas import ShortenedFilm
+from services import FilmService, PersonService
+
 from .schemas import DetailedPerson
 
-router = APIRouter(prefix="/persons", tags=["Persons"])
+router = APIRouter()
 
 
 @router.get("/")
 async def person_list(
-        search: str = Query(None),
-        sort: str = Query(None),
-        person_service: PersonService = Depends(PersonService.get_instance),
+    search: str = Query(None),
+    sort: str = Query(None),
+    person_service: PersonService = Depends(PersonService.get_instance),
 ) -> list[DetailedPerson]:
     persons = await person_service.get_many(sort_params=sort, search_params=search)
     return [DetailedPerson.from_elastic_schema(person) for person in persons]
@@ -21,7 +22,7 @@ async def person_list(
 
 @router.get("/{person_id}")
 async def person_details(
-        person_id: UUID = Path(...), person_service: PersonService = Depends(PersonService.get_instance)
+    person_id: UUID = Path(...), person_service: PersonService = Depends(PersonService.get_instance)
 ) -> DetailedPerson:
     person = await person_service.get_by_id(person_id)
     if not person:
@@ -30,11 +31,11 @@ async def person_details(
     return DetailedPerson.from_elastic_schema(person)
 
 
-@router.get("/persons/{person_id}/films")
+@router.get("/{person_id}/films")
 async def person_films(
-        person_id: UUID = Path(...),
-        person_service: PersonService = Depends(PersonService.get_instance),
-        film_service: FilmService = Depends(FilmService.get_instance),
+    person_id: UUID = Path(...),
+    person_service: PersonService = Depends(PersonService.get_instance),
+    film_service: FilmService = Depends(FilmService.get_instance),
 ) -> list[ShortenedFilm]:
     person = await person_service.get_by_id(person_id)
     if not person:

@@ -4,11 +4,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from services import FilmService
+
 from .schemas import DetailedFilm, ShortenedFilm
 
-SORTING_PARAMS = ['imdb_rating:asc', 'imdb_rating:desc']
+SORTING_PARAMS = ["imdb_rating:asc", "imdb_rating:desc"]
 
-router = APIRouter(prefix="/films", tags=['Films'])
+router = APIRouter()
 
 
 def sorting_params(sort: str = Query(None)):
