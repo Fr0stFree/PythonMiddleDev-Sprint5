@@ -21,8 +21,8 @@ logs:
 clean:
 	@docker compose -f $(COMPOSE_FILE_PATH) --env-file $(ENV_FILE_PATH) down -v --remove-orphans
 
-.PHONY: upload
-upload:
+.PHONY: loaddata
+loaddata:
 	@echo "$(COLOR_GREEN)Uploading...\nBe patient, it could take some time$(COLOR_RESET)"
 	@elasticdump \
 	  --input=$(DUMP_DIR)/movies_analyzer.json \
@@ -39,8 +39,8 @@ upload:
 	  --output=$(ELASTIC_URL) \
 	  --type=data
 
-.PHONY: dump
-dump:
+.PHONY: dumpdata
+dumpdata:
 	@elasticdump \
 	  --input=$(ELASTIC_URL) \
 	  --output=$(DUMP_DIR)/movies_analyzer.json \
