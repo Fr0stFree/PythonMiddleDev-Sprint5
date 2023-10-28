@@ -24,7 +24,7 @@ class FilmService(ServiceMixin):
             doc = await self.elastic.get(index=MOVIES_INDEX_NAME, id=film_id)
         except NotFoundError:
             return None
-        return Film.load_model(doc["_source"])
+        return Film(**doc["_source"])
 
     async def _film_from_cache(self, film_id: UUID) -> Optional[Film]:
         data = await self.redis.get(str(film_id))
@@ -41,4 +41,4 @@ class FilmService(ServiceMixin):
             query={"match": {"title": {"query": search_params}}},
             sort=sort_params
         )
-        return [Film.load_model(doc["_source"]) for doc in docs["hits"]["hits"]]
+        return [Film(**doc["_source"]) for doc in docs["hits"]["hits"]]
