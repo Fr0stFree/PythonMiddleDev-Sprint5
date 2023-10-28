@@ -4,7 +4,7 @@ import pytest
 from elasticsearch import AsyncElasticsearch
 from redis.asyncio import Redis
 
-from films.services import FilmService
+from services import FilmService
 
 
 class RedisMock(Mock):
