@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import ClassVar
+from typing import ClassVar, Type
 
 from pydantic import BaseModel
 
@@ -9,6 +9,6 @@ from .base import BaseService
 
 
 class PersonService(BaseService):
-    model_class: ClassVar[BaseModel] = Person
+    model_class: ClassVar[Type[BaseModel]] = Person
     elastic_index: ClassVar[str] = "movies"
     cache_expires: ClassVar[dt.timedelta] = dt.timedelta(minutes=5)
