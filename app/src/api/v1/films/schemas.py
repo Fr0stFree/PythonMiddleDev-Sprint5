@@ -35,7 +35,4 @@ class ShortenedFilm(BaseModel):
 
     @classmethod
     def from_elastic_schema(cls, film: Film) -> Self:
-        return cls(
-            uuid=film.id,
-            **film.model_dump(exclude={"description", "genre", "actors", "writers", "directors"})
-        )
+        return cls(uuid=film.id, **film.model_dump(exclude={"description", "genre", "actors", "writers", "directors"}))
