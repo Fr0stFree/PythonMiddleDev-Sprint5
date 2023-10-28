@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from core.mixins import CustomBaseModel
+from .base import CustomBaseModel
 
 
 class PersonRoles(CustomBaseModel):

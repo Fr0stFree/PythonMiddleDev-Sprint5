@@ -1,8 +1,5 @@
 from typing import Generic, Type, TypeVar
 
-import orjson
-from pydantic import BaseModel
-
 T = TypeVar("T")
 
 
@@ -19,9 +16,3 @@ class Singleton(Generic[T]):
         if cls._instance is None:
             raise RuntimeError(f"{cls} is not initialized.")
         return cls._instance
-
-
-class CustomBaseModel(BaseModel):
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = lambda v, *, default: orjson.dumps(v, default=default).decode()  # noqa: E731
