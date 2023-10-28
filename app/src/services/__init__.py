@@ -1,3 +1,3 @@
-from .film_service import FilmService
-from .genre_service import GenreService
-from .person_service import PersonService
+from .film import FilmService
+from .genre import GenreService
+from .person import PersonService
