@@ -14,17 +14,16 @@ class DetailedFilm(BaseModel):
     genre: list[str]
     actors: list[str]
     writers: list[str]
-    director: list[str]
+    directors: list[str]
 
     @classmethod
     def from_elastic_schema(cls, film: Film) -> Self:
         return cls(
             uuid=film.id,
-            genre=[genre.name for genre in film.genre],
             actors=[actor.name for actor in film.actors],
             writers=[writer.name for writer in film.writers],
-            director=[director.name for director in film.director],
-            **film.model_dump(exclude={"genre", "actors", "writers", "director"}),
+            directors=[director.name for director in film.directors],
+            **film.model_dump(exclude={"actors", "writers", "directors"}),
         )
 
 
