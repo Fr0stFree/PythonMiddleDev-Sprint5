@@ -3,15 +3,15 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from services import GenreService
-from .schemas import DetailedGenre
+from .schemas import DetailedGenre, Genre
 
 router = APIRouter(prefix="/genres", tags=['Genres'])
 
 
 @router.get("/genres")
-async def genre_list(genre_service: GenreService = Depends(GenreService.get_instance)) -> list[DetailedGenre]:
+async def genre_list(genre_service: GenreService = Depends(GenreService.get_instance)) -> list[Genre]:
     genres = await genre_service.get_many()
-    return [DetailedGenre.from_elastic_schema(genre) for genre in genres]
+    return [Genre.from_elastic_schema(genre) for genre in genres]
 
 
 @router.get("/genres/{genre_id}")
