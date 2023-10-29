@@ -1,4 +1,6 @@
-ELASTIC_URL := http://localhost:9200/movies
+MOVIES_INDEX := http://localhost:9200/movies
+PERSONS_INDEX := http://localhost:9200/persons
+GENRES_INDEX := http://localhost:9200/genres
 COMPOSE_FILE_PATH := ./docker-compose.dev.yml
 ENV_FILE_PATH := ./.env
 DUMP_DIR := ./dumps
@@ -23,34 +25,52 @@ clean:
 
 .PHONY: loaddata
 loaddata:
-	@echo "$(COLOR_GREEN)Uploading...\nBe patient, it could take some time$(COLOR_RESET)"
+	@echo "$(COLOR_GREEN)Be patient, it could take some time$(COLOR_RESET)"
+
+	@echo "$(COLOR_GREEN)Uploading movies...$(COLOR_RESET)"
 	@elasticdump \
 	  --input=$(DUMP_DIR)/movies_analyzer.json \
-	  --output=$(ELASTIC_URL) \
+	  --output=$(MOVIES_INDEX) \
 	  --type=analyzer
 
 	@elasticdump \
 	  --input=$(DUMP_DIR)/movies_mapping.json \
-	  --output=$(ELASTIC_URL) \
+	  --output=$(MOVIES_INDEX) \
 	  --type=mapping
 
 	@elasticdump \
 	  --input=$(DUMP_DIR)/movies.json \
-	  --output=$(ELASTIC_URL) \
+	  --output=$(MOVIES_INDEX) \
 	  --type=data
 
-.PHONY: dumpdata
-dumpdata:
+	@echo "$(COLOR_GREEN)Uploading persons...$(COLOR_RESET)"
 	@elasticdump \
-	  --input=$(ELASTIC_URL) \
-	  --output=$(DUMP_DIR)/movies_analyzer.json \
+	  --input=$(DUMP_DIR)/persons_analyzer.json \
+	  --output=$(PERSONS_INDEX) \
 	  --type=analyzer
+
 	@elasticdump \
-	  --input=$(ELASTIC_URL) \
-	  --output=$(DUMP_DIR)/movies_mapping.json \
+	  --input=$(DUMP_DIR)/persons_mapping.json \
+	  --output=$(PERSONS_INDEX) \
 	  --type=mapping
+
 	@elasticdump \
-	  --input=$(ELASTIC_URL) \
-	  --output=$(DUMP_DIR)/movies.json \
+	  --input=$(DUMP_DIR)/persons.json \
+	  --output=$(PERSONS_INDEX) \
 	  --type=data
 
+		@echo "$(COLOR_GREEN)Uploading genres...$(COLOR_RESET)"
+	@elasticdump \
+	  --input=$(DUMP_DIR)/genres_analyzer.json \
+	  --output=$(GENRES_INDEX) \
+	  --type=analyzer
+
+	@elasticdump \
+	  --input=$(DUMP_DIR)/genres_mapping.json \
+	  --output=$(GENRES_INDEX) \
+	  --type=mapping
+
+	@elasticdump \
+	  --input=$(DUMP_DIR)/genres.json \
+	  --output=$(GENRES_INDEX) \
+	  --type=data

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
@@ -7,15 +7,7 @@ from services import FilmService
 
 from .schemas import DetailedFilm, ShortenedFilm
 
-SORTING_PARAMS = ["imdb_rating:asc", "imdb_rating:desc"]
-
 router = APIRouter()
-
-
-def sorting_params(sort: str = Query(None)):
-    if sort not in SORTING_PARAMS:
-        return None
-    return sort
 
 
 @router.get("/{film_id}")
@@ -25,14 +17,21 @@ async def film_details(
     film = await film_service.get_by_id(film_id)
     if not film:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Film not found")
-    return DetailedFilm.from_elastic_schema(film)
+    return DetailedFilm(
+        **film.dict(exclude={"actors", "writers", "directors"}),
+        actors=[actor.name for actor in film.actors],
+        writers=[writer.name for writer in film.writers],
+        directors=[director.name for director in film.directors],
+    )
 
 
 @router.get("/")
 async def film_list(
     search: Annotated[str | None, Query(max_length=50)] = None,
-    sort: Annotated[str | None, Depends(sorting_params)] = None,
+    sort: Annotated[Literal["imdb_rating:asc", "imdb_rating:desc"], Query()] = "imdb_rating:asc",
     film_service: FilmService = Depends(FilmService.get_instance),
 ) -> list[ShortenedFilm]:
-    films = await film_service.get_many(sort_params=sort, search_params=search)
-    return [ShortenedFilm.from_elastic_schema(film) for film in films]
+    params = {"sort": sort}
+    query = {"match_all": {}} if search is None else {"multi_match": {"query": search}}
+    films = await film_service.get_many(query, params)
+    return films

@@ -1,15 +1,14 @@
-from typing import Self
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from models.genre import Genre
+
+class ShortenedGenre(BaseModel):
+    id: UUID
+    name: str
 
 
 class DetailedGenre(BaseModel):
-    uuid: UUID
+    id: UUID
     name: str
-
-    @classmethod
-    def from_elastic_schema(cls, genre: Genre) -> Self:
-        return cls(**genre.model_dump())
+    description: str

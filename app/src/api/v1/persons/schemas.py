@@ -1,7 +1,7 @@
-from typing import Self
 from uuid import UUID
 
 from pydantic import BaseModel
+from typing_extensions import Self
 
 from models.person import Person
 

@@ -1,18 +1,12 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from services import GenreService
 
-from .schemas import DetailedGenre
+from .schemas import DetailedGenre, ShortenedGenre
 
 router = APIRouter()
-
-
-@router.get("/")
-async def genre_list(genre_service: GenreService = Depends(GenreService.get_instance)) -> list[DetailedGenre]:
-    genres = await genre_service.get_many()
-    return [DetailedGenre.from_elastic_schema(genre) for genre in genres]
 
 
 @router.get("/{genre_id}")
@@ -23,4 +17,14 @@ async def genre_details(
     if not genre:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Genre not found")
 
-    return DetailedGenre.from_elastic_schema(genre)
+    return genre
+
+
+@router.get("/")
+async def genre_list(
+    search: str = Query(None, max_length=50), genre_service: GenreService = Depends(GenreService.get_instance)
+) -> list[ShortenedGenre]:
+    query = {"match_all": {}} if search is None else {"multi_match": {"query": search, "fields": ["name"]}}
+    params = {"size": 10}
+    genres = await genre_service.get_many(query, params)
+    return genres

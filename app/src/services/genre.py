@@ -10,5 +10,5 @@ from .base import BaseService
 
 class GenreService(BaseService):
     model_class: ClassVar[Type[BaseModel]] = Genre
-    elastic_index: ClassVar[str] = "movies"
+    elastic_index: ClassVar[str] = "genres"
     cache_expires: ClassVar[dt.timedelta] = dt.timedelta(minutes=5)

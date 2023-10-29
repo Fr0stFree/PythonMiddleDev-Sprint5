@@ -6,3 +6,4 @@ from .base import CustomBaseModel
 class Genre(CustomBaseModel):
     id: UUID
     name: str
+    description: str

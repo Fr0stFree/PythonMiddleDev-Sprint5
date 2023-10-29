@@ -3,7 +3,7 @@ from uuid import UUID
 from .base import CustomBaseModel
 
 
-class PersonRoles(CustomBaseModel):
+class _PersonRoles(CustomBaseModel):
     id: UUID  # film uuid
     roles: list[str]
 
@@ -11,9 +11,4 @@ class PersonRoles(CustomBaseModel):
 class Person(CustomBaseModel):
     id: UUID
     name: str
-    films: list[PersonRoles]
-
-
-class PersonWithoutFilms(CustomBaseModel):
-    id: UUID
-    name: str
+    films: list[_PersonRoles]
