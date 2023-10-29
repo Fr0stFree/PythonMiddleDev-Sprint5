@@ -1,6 +1,7 @@
 Что бы сделать дамп ElasticSearch нужно поставить утилиту elastidump:
 https://github.com/elasticsearch-dump/elasticsearch-dump#installing
 
+npm install elasticdump -g
 
 Сдампить все необходимые сущности - данные индекса, маппинг и аналайзер:
 elasticdump \

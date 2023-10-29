@@ -1,20 +1,17 @@
-import uuid
 from uuid import UUID
-from core.mixins import CustomBaseModel
-from .genre import Genre
-from .person import PersonWithoutFilms
 
-from pydantic import Field
+from .base import CustomBaseModel
 
 
-class FilmBase(CustomBaseModel):
-    uuid: UUID = Field(alias='id')
+class NestedFilm(CustomBaseModel):
+    id: UUID
     title: str
     imdb_rating: float
 
-    @classmethod
-    def load_model(cls, source):
-        return cls(**source)
+
+class NestedPerson(CustomBaseModel):
+    id: UUID
+    name: str
 
 
 class Film(CustomBaseModel):
@@ -23,6 +20,6 @@ class Film(CustomBaseModel):
     imdb_rating: float
     description: str
     genre: list[str]
-    actors: list[PersonWithoutFilms]
-    writers: list[PersonWithoutFilms]
-    directors: list[PersonWithoutFilms]
+    actors: list[NestedPerson]
+    writers: list[NestedPerson]
+    directors: list[NestedPerson]
