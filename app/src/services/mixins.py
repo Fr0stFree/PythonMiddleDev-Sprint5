@@ -1,4 +1,4 @@
-from typing import Self
+from typing_extensions import Self
 
 from core.mixins import Singleton
 from db import ElasticApp, RedisApp
