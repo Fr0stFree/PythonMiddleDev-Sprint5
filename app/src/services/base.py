@@ -47,8 +47,8 @@ class BaseService(Singleton, ABC):
         pass
 
     async def get_by_id(self, id: UUID) -> Optional[model_class]:
-        # if (model := await self._get_cached_model(id)) is not None:
-        #     return model
+        if (model := await self._get_cached_model(id)) is not None:
+            return model
 
         if (model := await self._get_model(id)) is not None:
             asyncio.create_task(self._cache_model(model))
@@ -71,8 +71,8 @@ class BaseService(Singleton, ABC):
             return None
 
     async def get_many(self, query: dict, params: dict) -> list[model_class]:
-        # if (models := await self._get_cached_models(query, params)) is not None:
-        #     return models
+        if (models := await self._get_cached_models(query, params)) is not None:
+            return models
 
         if (models := await self._get_models(query, params)) is not None:
             asyncio.create_task(self._cache_models(models, query, params))
