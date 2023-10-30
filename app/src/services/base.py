@@ -57,7 +57,7 @@ class BaseService(Singleton, ABC):
     async def _get_cached_model(self, id: UUID) -> Optional[model_class]:
         key = self._build_single_model_cache_key(id)
         if (model := await self.redis.get(key)) is not None:
-            return self.model_class.model_validate(orjson.loads(model))
+            return self.model_class.model_validate_json(model)
 
     async def _cache_model(self, model: model_class) -> None:
         key = self._build_single_model_cache_key(model.id)

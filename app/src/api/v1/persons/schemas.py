@@ -1,9 +1,6 @@
 from uuid import UUID
 
 from pydantic import BaseModel
-from typing_extensions import Self
-
-from models.person import Person
 
 
 class _PersonRoles(BaseModel):
@@ -15,7 +12,3 @@ class DetailedPerson(BaseModel):
     uuid: UUID
     full_name: str
     films: list[_PersonRoles]
-
-    @classmethod
-    def from_elastic_schema(cls, person: Person) -> Self:
-        return cls(**person.model_dump())

@@ -34,4 +34,5 @@ class PersonService(BaseService):
                 ]
             }
         }
-        return await super().get_many(query, params={"size": 100})
+        params = {"size": 100}
+        return await self.get_many(query, params)

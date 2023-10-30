@@ -1,3 +1,4 @@
+from typing import cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
@@ -44,4 +45,5 @@ async def person_films(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
 
     films = await person_service.get_films_by_person(person_id)
+    films = cast(films, ShortenedFilm)
     return films

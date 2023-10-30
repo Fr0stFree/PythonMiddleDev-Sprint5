@@ -1,3 +1,3 @@
-from .film import Film, NestedFilm, NestedPerson
+from .film import Film, NestedFilm
 from .genre import Genre
-from .person import Person
+from .person import NestedPerson, NestedPersonRoles, Person
