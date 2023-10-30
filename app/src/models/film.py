@@ -1,17 +1,13 @@
 from uuid import UUID
 
 from .base import CustomBaseModel
+from .person import NestedPerson
 
 
 class NestedFilm(CustomBaseModel):
     id: UUID
     title: str
     imdb_rating: float
-
-
-class NestedPerson(CustomBaseModel):
-    id: UUID
-    name: str
 
 
 class Film(CustomBaseModel):
