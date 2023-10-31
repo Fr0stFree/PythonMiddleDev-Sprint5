@@ -3,7 +3,8 @@ name: 'cinema-prod'
 
 services:
   app:
-    build: ../../app
+    build:
+      context: ../../app
     container_name: app
     depends_on:
       - elastic
@@ -17,8 +18,6 @@ services:
       - PROJECT_NAME
       - DEBUG
       - SECRET_KEY
-      - APP_HOST
-      - APP_PORT
       - REDIS_HOST
       - REDIS_PORT
       - ELASTIC_HOST
@@ -35,6 +34,7 @@ services:
     environment:
       - NGINX_HOST
       - APP_PORT
+      - APP_HOST
     networks:
       - cinema-network
     depends_on:

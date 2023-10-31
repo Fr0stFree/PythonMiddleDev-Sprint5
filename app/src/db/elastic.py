@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing_extensions import Self
+from typing import Self
 
 from elasticsearch import AsyncElasticsearch
 
