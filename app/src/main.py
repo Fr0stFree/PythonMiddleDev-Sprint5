@@ -1,7 +1,6 @@
 import asyncio
 import logging
 
-import uvicorn
 from fastapi import FastAPI
 
 from api.router import router
@@ -37,6 +36,8 @@ async def shutdown():
 
 
 if __name__ == "__main__":
+    import uvicorn
+
     uvicorn.run(
         app="main:app",
         host=settings.app_host,

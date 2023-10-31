@@ -1,20 +1,28 @@
-version: '3'
+version: '3.7'
+name: 'cinema-prod'
+
 services:
-  service:
+  nginx:
+    image: nginx:1.25.3-alpine
+    container_name: nginx
+    restart: unless-stopped
+
+  app:
     build: ./app
-    container_name: service
+    container_name: app
     env_file:
       - .env
     depends_on:
       - elastic
-    ports:
-      - "8000:8000"
+      - redis
+    restart: unless-stopped
 
   elastic:
     image: elasticsearch:8.6.2
     container_name: elastic
-    restart: always
+    restart: unless-stopped
 
   redis:
-    image: redis:alpine
+    image: redis:7.2-alpine
     container_name: redis
+    restart: unless-stopped
