@@ -1,5 +1,8 @@
-version: '3'
+version: '3.7'
+name: 'cinema-dev'
+
 services:
+
   elastic:
     image: elasticsearch:8.6.2
     container_name: elastic

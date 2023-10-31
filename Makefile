@@ -1,8 +1,10 @@
+ENV ?= prod
+
 MOVIES_INDEX := http://localhost:9200/movies
 PERSONS_INDEX := http://localhost:9200/persons
 GENRES_INDEX := http://localhost:9200/genres
-COMPOSE_FILE_PATH := ./docker-compose.dev.yml
-ENV_FILE_PATH := ./.env
+COMPOSE_FILE_PATH := ./infra/${ENV}/docker-compose.yml
+ENV_FILE_PATH := ./infra/${ENV}/.env.example
 DUMP_DIR := ./dumps
 
 COLOR_RESET = \033[0m
@@ -13,7 +15,8 @@ COLOR_WHITE = \033[00m
 
 .PHONY: build
 build:
-	@docker compose -f $(COMPOSE_FILE_PATH) --env-file $(ENV_FILE_PATH) up -d --build
+	@docker compose -f $(COMPOSE_FILE_PATH) --env-file $(ENV_FILE_PATH) up --build
+
 
 .PHONY: logs
 logs:

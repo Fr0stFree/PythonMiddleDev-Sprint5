@@ -1,0 +1,67 @@
+version: '3.7'
+name: 'cinema-prod'
+
+services:
+  app:
+    build: ../../app
+    container_name: app
+    depends_on:
+      - elastic
+      - redis
+    env_file:
+      - ./.env.example
+    restart: unless-stopped
+    networks:
+      - cinema-network
+    environment:
+      - PROJECT_NAME
+      - DEBUG
+      - SECRET_KEY
+      - APP_HOST
+      - APP_PORT
+      - REDIS_HOST
+      - REDIS_PORT
+      - ELASTIC_HOST
+      - ELASTIC_PORT
+
+  nginx:
+    image: nginx:1.25.3-alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - NGINX_HOST
+      - APP_PORT
+    networks:
+      - cinema-network
+    depends_on:
+      - app
+
+  elastic:
+    image: elasticsearch:8.6.2
+    container_name: elastic
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - cinema-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - cinema-network
+
+networks:
+  cinema-network:
+    driver: bridge
+
+volumes:
+  es_data:
