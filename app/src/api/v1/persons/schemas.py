@@ -4,11 +4,11 @@ from pydantic import BaseModel
 
 
 class _PersonRoles(BaseModel):
-    uuid: UUID
+    id: UUID
     roles: list[str]
 
 
 class DetailedPerson(BaseModel):
-    uuid: UUID
-    full_name: str
+    id: UUID
+    name: str
     films: list[_PersonRoles]

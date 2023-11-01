@@ -14,7 +14,7 @@ class PersonService(BaseService):
     elastic_index: ClassVar[str] = "persons"
     cache_expires: ClassVar[dt.timedelta] = dt.timedelta(minutes=5)
 
-    async def get_films_by_person(self, person_id: UUID) -> list[NestedFilm]:
+    async def get_films_by_person(self, person_id: UUID, params: list) -> list[NestedFilm]:
         query = {
             "bool": {
                 "should": [
@@ -34,5 +34,4 @@ class PersonService(BaseService):
                 ]
             }
         }
-        params = {"size": 100}
         return await self.get_many(query, params)

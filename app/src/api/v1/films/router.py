@@ -10,7 +10,9 @@ from .schemas import DetailedFilm, ShortenedFilm
 router = APIRouter()
 
 
-@router.get("/{film_id}")
+@router.get("/{film_id}",
+            description="Returns information about a specific film by ID",
+            )
 async def film_details(
     film_id: UUID = Path(...), film_service: FilmService = Depends(FilmService.get_instance)
 ) -> DetailedFilm:
@@ -25,13 +27,17 @@ async def film_details(
     )
 
 
-@router.get("/")
+@router.get("/",
+            description="Returns a list films",
+            )
 async def film_list(
     search: Annotated[str | None, Query(max_length=50)] = None,
     sort: Annotated[Literal["imdb_rating:asc", "imdb_rating:desc"], Query()] = "imdb_rating:asc",
     film_service: FilmService = Depends(FilmService.get_instance),
+    page_number: int = Query(None, ge=0),
+    page_size: int = Query(None, ge=1),
 ) -> list[ShortenedFilm]:
-    params = {"sort": sort}
+    params = {"sort": sort, "size": page_size, "from": page_number}
     query = {"match_all": {}} if search is None else {"multi_match": {"query": search}}
     films = await film_service.get_many(query, params)
     return films
