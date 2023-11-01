@@ -46,11 +46,13 @@ async def person_list(
 async def person_films(
     person_id: UUID = Path(...),
     person_service: PersonService = Depends(PersonService.get_instance),
+    page_number: int = Query(None, ge=0),
+    page_size: int = Query(None, ge=1),
 ) -> list[ShortenedFilm]:
     person = await person_service.get_by_id(person_id)
     if not person:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
-
-    films = await person_service.get_films_by_person(person_id)
+    params = {"size": page_size, "from": page_number}
+    films = await person_service.get_films_by_person(person_id, params)
     films = cast(films, ShortenedFilm)
     return films

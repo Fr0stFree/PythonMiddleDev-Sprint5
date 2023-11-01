@@ -34,8 +34,10 @@ async def film_list(
     search: Annotated[str | None, Query(max_length=50)] = None,
     sort: Annotated[Literal["imdb_rating:asc", "imdb_rating:desc"], Query()] = "imdb_rating:asc",
     film_service: FilmService = Depends(FilmService.get_instance),
+    page_number: int = Query(None, ge=0),
+    page_size: int = Query(None, ge=1),
 ) -> list[ShortenedFilm]:
-    params = {"sort": sort}
+    params = {"sort": sort, "size": page_size, "from": page_number}
     query = {"match_all": {}} if search is None else {"multi_match": {"query": search}}
     films = await film_service.get_many(query, params)
     return films
