@@ -15,7 +15,7 @@ COLOR_WHITE = \033[00m
 
 .PHONY: build
 build:
-	@docker compose -f $(COMPOSE_FILE_PATH) --env-file $(ENV_FILE_PATH) up --build
+	@docker compose -f $(COMPOSE_FILE_PATH) --env-file $(ENV_FILE_PATH) up --build -d
 
 
 .PHONY: logs

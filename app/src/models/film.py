@@ -4,12 +4,6 @@ from .base import CustomBaseModel
 from .person import NestedPerson
 
 
-class NestedFilm(CustomBaseModel):
-    id: UUID
-    title: str
-    imdb_rating: float
-
-
 class Film(CustomBaseModel):
     id: UUID
     title: str

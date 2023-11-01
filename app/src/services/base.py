@@ -104,5 +104,5 @@ class BaseService(Singleton, ABC):
     def _build_many_models_cache_key(self, query: dict = None, params: dict = None) -> str:
         query = query or {}
         params = params or {}
-        hashed_request = md5((json.dumps(query) + str(json.dumps(params))).encode(), usedforsecurity=False).hexdigest()
+        hashed_request = md5((orjson.dumps(query) + orjson.dumps(params)), usedforsecurity=False).hexdigest()
         return f"{self.model_class.__name__.lower()}s#{hashed_request}"
