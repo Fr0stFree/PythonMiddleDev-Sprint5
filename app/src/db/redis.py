@@ -3,15 +3,14 @@ from typing import Self
 
 from redis.asyncio import Redis
 
-from core.mixins import Singleton
+from .base import BaseApp
 
 logger = getLogger(__name__)
 
 
-class RedisApp(Singleton):
-    def __init__(self, host: str, port: int) -> None:
-        self._host = host
-        self._port = port
+class RedisApp(BaseApp):
+    def __init__(self, host: str, port: int, **kwargs) -> None:
+        super().__init__(host, port)
         self._redis: Redis | None = None
 
     async def connect(self) -> None:
