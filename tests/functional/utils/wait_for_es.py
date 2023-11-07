@@ -1,7 +1,7 @@
 import time
 from elasticsearch import Elasticsearch
 
-from settings import Settings
+from .settings import Settings
 
 if __name__ == '__main__':
     settings = Settings()
