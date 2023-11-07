@@ -1,7 +1,8 @@
 import pytest
+import aiohttp
 import json
 from elasticsearch import AsyncElasticsearch
-from .settings import Settings
+from tests.functional.utils.settings import Settings
 
 
 def get_es_bulk_query(es_data, es_index, es_id_field) -> list:
@@ -13,28 +14,44 @@ def get_es_bulk_query(es_data, es_index, es_id_field) -> list:
     return bulk_query
 
 
-@pytest.fixture(scope='session')
-async def es_client():
-    es_client = AsyncElasticsearch(hosts='http://localhost:9200')
-    yield es_client
-    await es_client.close()
-
-
 @pytest.fixture
-def es_write_data(es_client):
+def es_write_data():
     async def inner(data):
-        bulk_query = get_es_bulk_query(data, 'persons', 'id')
+        settings = Settings()
+        bulk_query = get_es_bulk_query(data, settings.es_index_persons, 'id')
         str_query = '\n'.join(bulk_query) + '\n'
-        response = await es_client.bulk(operations=str_query, refresh=True)
 
+        es_client = AsyncElasticsearch(hosts=f'http://{settings.elastic_host}:{settings.elastic_port}')
+        response = await es_client.bulk(operations=str_query, refresh=True)
+        await es_client.close()
         if response['errors']:
             raise Exception('Ошибка записи данных в Elasticsearch')
     return inner
 
 
 @pytest.fixture
-def es_clear_data(es_client):
+def es_clear_data():
     async def inner(index):
-        await es_client.delete_by_query(index='persons', body={"query": {"match_all": {}}})
+        settings = Settings()
+        es_client = AsyncElasticsearch(hosts=f'http://{settings.elastic_host}:{settings.elastic_port}')
+        await es_client.delete_by_query(index=index, body={"query": {"match_all": {}}})
+        await es_client.close()
+
+    return inner
+
+
+@pytest.fixture
+def make_get_request():
+    async def inner(endpoint, query_data):
+        settings = Settings()
+        url = f'http://{settings.app_host}:{settings.app_port}/api/v1/{endpoint}'
+        session = aiohttp.ClientSession()
+
+        async with session.get(url, params=query_data) as response:
+            body = await response.json()
+            headers = response.headers
+            status = response.status
+        await session.close()
+        return {'body': body, 'status': status, 'headers': headers}
 
     return inner
