@@ -1,11 +1,13 @@
 import time
 from redis import Redis
 
-from settings import Settings
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 if __name__ == '__main__':
-    settings = Settings()
-    redis_client = Redis(host=f'{settings.redis_host}')
+    redis_client = Redis(host=f'{os.getenv("REDIS_HOST")}')
     while True:
         if redis_client.ping():
             print('Success connect Redis')

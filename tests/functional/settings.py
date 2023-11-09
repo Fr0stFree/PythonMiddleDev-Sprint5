@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     es_index_persons: str = Field("persons")
 
+    app_persons_endpoint: str = Field("persons")
+
     class Config:
         env_file = find_dotenv(".env")
         env_file_encoding = "utf-8"

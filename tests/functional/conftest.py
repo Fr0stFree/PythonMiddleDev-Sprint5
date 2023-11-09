@@ -2,7 +2,12 @@ import pytest
 import aiohttp
 import json
 from elasticsearch import AsyncElasticsearch
-from tests.functional.utils.settings import Settings
+from dotenv import find_dotenv
+from pydantic import Field
+from pydantic_settings import BaseSettings
+
+
+from functional.settings import Settings
 
 
 def get_es_bulk_query(es_data, es_index, es_id_field) -> list:
@@ -48,6 +53,22 @@ def make_get_request():
         session = aiohttp.ClientSession()
 
         async with session.get(url, params=query_data) as response:
+            body = await response.json()
+            headers = response.headers
+            status = response.status
+        await session.close()
+        return {'body': body, 'status': status, 'headers': headers}
+
+    return inner
+
+@pytest.fixture
+def make_get_request_id():
+    async def inner(endpoint, query_data):
+        settings = Settings()
+        url = f'http://{settings.app_host}:{settings.app_port}/api/v1/{endpoint}/{query_data["id"]}'
+        session = aiohttp.ClientSession()
+
+        async with session.get(url) as response:
             body = await response.json()
             headers = response.headers
             status = response.status

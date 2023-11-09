@@ -39,13 +39,10 @@ services:
     depends_on:
       - service
     entrypoint: >
-      sh -c "python3 /tests/functional/utils/wait_for_es.py
-      && python3 /tests/functional/utils/wait_for_redis.py"
-#    С запуском тестов
-#    entrypoint: >
-#          sh -c "python3 /tests/functional/utils/wait_for_es.py
-#          && python3 /tests/functional/utils/wait_for_redis.py
-#          && pytest /tests/functional/src"
+          sh -c "pip install --upgrade pip
+          && python3 /tests/functional/utils/wait_for_es.py
+          && python3 /tests/functional/utils/wait_for_redis.py
+          &&  python3.11 -m pytest /tests/functional"
     networks:
       - cinema-network
 volumes:
