@@ -2,11 +2,10 @@ import pytest
 import aiohttp
 import json
 from elasticsearch import AsyncElasticsearch
+
 from dotenv import find_dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings
-
-
 from functional.settings import Settings
 
 
@@ -58,8 +57,8 @@ def make_get_request():
             status = response.status
         await session.close()
         return {'body': body, 'status': status, 'headers': headers}
-
     return inner
+
 
 @pytest.fixture
 def make_get_request_id():

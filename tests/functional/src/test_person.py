@@ -6,7 +6,9 @@ import aiohttp
 import pytest
 
 from elasticsearch import AsyncElasticsearch
+
 from functional.settings import Settings
+
 
 @pytest.mark.parametrize(
     'query_data, expected_answer',
@@ -42,6 +44,7 @@ async def test_search_persons(es_write_data, query_data, expected_answer, make_g
     response = await make_get_request(settings.app_persons_endpoint, query_data)
     assert response['status'] == expected_answer['status']
     assert len(response['body']) == expected_answer['length']
+
 
     await es_clear_data(settings.es_index_persons)
 
@@ -81,4 +84,5 @@ async def test_person_item(es_write_data, query_data, expected_answer, make_get_
     assert response['status'] == expected_answer['status']
 
     await es_clear_data(settings.es_index_persons)
+
 
