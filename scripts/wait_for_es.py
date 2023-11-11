@@ -1,7 +1,9 @@
-import time
-from elasticsearch import Elasticsearch
-from dotenv import load_dotenv
 import os
+import time
+
+from dotenv import load_dotenv
+from elasticsearch import Elasticsearch
+
 load_dotenv()
 
 

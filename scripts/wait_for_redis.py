@@ -1,8 +1,8 @@
+import os
 import time
-from redis import Redis
 
 from dotenv import load_dotenv
-import os
+from redis import Redis
 
 load_dotenv()
 

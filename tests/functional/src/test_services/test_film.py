@@ -1,18 +1,19 @@
 from unittest.mock import Mock
 from uuid import UUID
 
+import pytest
 from elastic_transport import ApiResponseMeta
 from elasticsearch import NotFoundError
 from faker import Faker
 
+from functional.src.factories import FilmFactory
 from models import Film
 from services import FilmService
-
-from ..factories import FilmFactory
 
 fake = Faker()
 
 
+@pytest.mark.asyncio
 async def test_get_existing_film_from_elastic(film_service: FilmService) -> None:
     looking_film_id = UUID(fake.uuid4())
     film_service.redis.get.return_value = None
@@ -26,6 +27,7 @@ async def test_get_existing_film_from_elastic(film_service: FilmService) -> None
     film_service.elastic.get.assert_awaited_once_with(index=FilmService.elastic_index, id=str(looking_film_id))
 
 
+@pytest.mark.asyncio
 async def test_get_existing_film_from_redis(film_service: FilmService) -> None:
     looking_film_id = UUID(fake.uuid4())
     film_service.redis.get.return_value = FilmFactory.create(id=looking_film_id).model_dump_json()
@@ -38,6 +40,7 @@ async def test_get_existing_film_from_redis(film_service: FilmService) -> None:
     film_service.elastic.get.assert_not_awaited()
 
 
+@pytest.mark.asyncio
 async def test_get_non_existing_film(film_service: FilmService) -> None:
     looking_film_id = UUID(fake.uuid4())
     film_service.redis.get.return_value = None
@@ -50,6 +53,7 @@ async def test_get_non_existing_film(film_service: FilmService) -> None:
     film_service.elastic.get.assert_awaited_once_with(index=FilmService.elastic_index, id=str(looking_film_id))
 
 
+@pytest.mark.asyncio
 async def test_get_many_films_from_elastic(film_service: FilmService) -> None:
     film_service.redis.exists.return_value = False
     film_service.elastic.search.return_value = {
@@ -70,6 +74,7 @@ async def test_get_many_films_from_elastic(film_service: FilmService) -> None:
     film_service.elastic.search.assert_awaited_once_with(index=FilmService.elastic_index, query={}, params={})
 
 
+@pytest.mark.asyncio
 async def get_many_films_from_redis(film_service: FilmService) -> None:
     film_service.redis.exists.return_value = True
     film_service.redis.lrange.return_value = [
@@ -86,6 +91,7 @@ async def get_many_films_from_redis(film_service: FilmService) -> None:
     film_service.elastic.search.assert_not_awaited()
 
 
+@pytest.mark.asyncio
 async def get_non_existing_films(film_service: FilmService) -> None:
     film_service.redis.exists.return_value = False
     film_service.elastic.search.return_value = {"hits": {"hits": []}}

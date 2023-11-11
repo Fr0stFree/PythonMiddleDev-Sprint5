@@ -1,18 +1,19 @@
 from unittest.mock import Mock
 from uuid import UUID
 
+import pytest
 from elastic_transport import ApiResponseMeta
 from elasticsearch import NotFoundError
 from faker import Faker
 
+from functional.src.factories import PersonFactory
 from models import Person
 from services import PersonService
-
-from ..factories import PersonFactory
 
 fake = Faker()
 
 
+@pytest.mark.asyncio
 async def test_get_existing_person_from_elastic(person_service: PersonService) -> None:
     looking_person_id = UUID(fake.uuid4())
     person_service.redis.get.return_value = None
@@ -26,6 +27,7 @@ async def test_get_existing_person_from_elastic(person_service: PersonService) -
     person_service.elastic.get.assert_awaited_once_with(index=PersonService.elastic_index, id=str(looking_person_id))
 
 
+@pytest.mark.asyncio
 async def test_get_existing_person_from_redis(person_service: PersonService) -> None:
     looking_film_id = UUID(fake.uuid4())
     person_service.redis.get.return_value = PersonFactory.create(id=looking_film_id).model_dump_json()
@@ -38,6 +40,7 @@ async def test_get_existing_person_from_redis(person_service: PersonService) -> 
     person_service.elastic.get.assert_not_awaited()
 
 
+@pytest.mark.asyncio
 async def test_get_non_existing_person(person_service: PersonService) -> None:
     looking_film_id = UUID(fake.uuid4())
     person_service.redis.get.return_value = None
@@ -50,6 +53,7 @@ async def test_get_non_existing_person(person_service: PersonService) -> None:
     person_service.elastic.get.assert_awaited_once_with(index=PersonService.elastic_index, id=str(looking_film_id))
 
 
+@pytest.mark.asyncio
 async def test_get_many_persons_from_elastic(person_service: PersonService) -> None:
     person_service.redis.exists.return_value = False
     person_service.elastic.search.return_value = {
@@ -70,6 +74,7 @@ async def test_get_many_persons_from_elastic(person_service: PersonService) -> N
     person_service.elastic.search.assert_awaited_once_with(index=PersonService.elastic_index, query={}, params={})
 
 
+@pytest.mark.asyncio
 async def get_many_persons_from_redis(person_service: PersonService) -> None:
     person_service.redis.exists.return_value = True
     person_service.redis.lrange.return_value = [
@@ -86,6 +91,7 @@ async def get_many_persons_from_redis(person_service: PersonService) -> None:
     person_service.elastic.search.assert_not_awaited()
 
 
+@pytest.mark.asyncio
 async def get_non_existing_persons(person_service: PersonService) -> None:
     person_service.redis.exists.return_value = False
     person_service.elastic.search.return_value = {"hits": {"hits": []}}

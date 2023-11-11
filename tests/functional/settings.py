@@ -16,9 +16,11 @@ class Settings(BaseSettings):
     elastic_host: str = Field(..., env="ELASTIC_HOST")
     elastic_port: int = Field(..., env="ELASTIC_PORT")
 
-    es_index_persons: str = Field("persons")
+    es_index_persons: str = "persons"
+    es_index_genres: str = "genres"
 
-    app_persons_endpoint: str = Field("persons")
+    app_persons_endpoint: str = "persons"
+    app_genres_endpoint: str = "genres"
 
     class Config:
         env_file = find_dotenv(".env")

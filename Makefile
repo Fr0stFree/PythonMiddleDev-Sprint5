@@ -4,6 +4,7 @@ MOVIES_INDEX := http://localhost:9200/movies
 PERSONS_INDEX := http://localhost:9200/persons
 GENRES_INDEX := http://localhost:9200/genres
 COMPOSE_FILE_PATH := ./infra/${ENV}/docker-compose.yml
+TEST_COMPOSE_FILE_PATH := ./infra/test/docker-compose.yml
 ENV_FILE_PATH := ./infra/${ENV}/.env.example
 DUMP_DIR := ./dumps
 
@@ -17,6 +18,9 @@ COLOR_WHITE = \033[00m
 build:
 	@docker compose -f $(COMPOSE_FILE_PATH) --env-file $(ENV_FILE_PATH) up --build -d
 
+.PHONY: test
+test:
+	@docker compose -f $(TEST_COMPOSE_FILE_PATH) up
 
 .PHONY: logs
 logs:
