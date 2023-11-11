@@ -15,51 +15,6 @@ from core.mixins import Singleton
 from db import ElasticApp, RedisApp
 
 
-class BaseCacheService:
-    def __init__(self, cache_app, model_name):
-        self.cache_app = cache_app
-        self.model_name = model_name
-
-    @property
-    @abstractmethod
-    def cache_expires(self) -> dt.timedelta:
-        pass
-
-    async def _get_cached_model(self, id: UUID) -> Optional[str]:
-        key = self._build_single_model_cache_key(id)
-        if (model := await self.cache_app.get(key)) is not None:
-            return model
-
-    async def _cache_model(self, model: BaseModel) -> None:
-        key = self._build_single_model_cache_key(model.id)
-        await self.cache_app.set(key, model.model_dump_json(), self.cache_expires)
-
-    async def _get_cached_models(self, query: dict, params: dict) -> list[str] | None:
-        key = self._build_many_models_cache_key(query, params)
-        if not await self.cache_app.exists(key):
-            return None
-
-        models = await self.cache_app.lrange(key, 0, -1)
-        return models
-
-    async def _cache_models(self, models: list[BaseModel], query=None, params=None) -> None:
-        if not models:  # no need to cache empty list
-            return
-
-        key = self._build_many_models_cache_key(query, params)
-        await self.cache_app.lpush(key, *[model.model_dump_json() for model in models])
-        await self.cache_app.expire(key, self.cache_expires)
-
-    def _build_single_model_cache_key(self, id: UUID) -> str:
-        return f"{self.model_name}#{id}"
-
-    def _build_many_models_cache_key(self, query: dict = None, params: dict = None) -> str:
-        query = query or {}
-        params = params or {}
-        hashed_request = md5((orjson.dumps(query) + orjson.dumps(params)), usedforsecurity=False).hexdigest()
-        return f"{self.model_name}s#{hashed_request}"
-
-
 class BaseService(Singleton, ABC):
     def __init__(
         self,

@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from services import GenreService
 
-from api.v1.dependencies import get_pagination_params
 from .schemas import DetailedGenre, ShortenedGenre
 
 router = APIRouter()
@@ -31,9 +30,10 @@ async def genre_details(
 async def genre_list(
     search: str = Query(None, max_length=50),
     genre_service: GenreService = Depends(GenreService.get_instance),
-    pagination_params: dict = Depends(get_pagination_params)
+    page_number: int = Query(None, ge=0),
+    page_size: int = Query(None, ge=1),
 ) -> list[ShortenedGenre]:
     query = {"match_all": {}} if search is None else {"multi_match": {"query": search, "fields": ["name"]}}
-    params = pagination_params
+    params = {"size": page_size, "from": page_number}
     genres = await genre_service.get_many(query, params)
     return genres
