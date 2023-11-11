@@ -1,16 +1,16 @@
 from logging import getLogger
-from typing import Self
 
 from redis.asyncio import Redis
 
-from .base import BaseApp
+from core.mixins import Singleton
 
 logger = getLogger(__name__)
 
 
-class RedisApp(BaseApp):
+class RedisApp(Singleton):
     def __init__(self, host: str, port: int, **kwargs) -> None:
-        super().__init__(host, port)
+        self._host = host
+        self._port = port
         self._redis: Redis | None = None
 
     async def connect(self) -> None:
@@ -25,9 +25,8 @@ class RedisApp(BaseApp):
         self._redis = None
         logger.info("Connection closed successfully.")
 
-    @classmethod
-    def get_instance(cls) -> Redis:
-        instance: Self = super().get_instance()
-        if instance._redis is None:
-            raise RuntimeError("Redis connection is closed")
-        return instance._redis
+    @property
+    def instance(self) -> Redis:
+        if self._redis is None:
+            raise RuntimeError("Redis is not initialized.")
+        return self._redis

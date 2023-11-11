@@ -7,7 +7,7 @@ from fastapi import FastAPI
 
 from api.router import router
 from core.config import Settings
-from db import BaseApp, ElasticApp, RedisApp
+from db import ElasticApp, RedisApp
 
 settings = Settings()
 
@@ -15,9 +15,11 @@ settings = Settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # create connections to the databases
-    redis: BaseApp = RedisApp(host=settings.redis_host, port=settings.redis_port)
+    redis = RedisApp(host=settings.redis_host, port=settings.redis_port)
     elastic = ElasticApp(host=settings.elastic_host, port=settings.elastic_port)
     await asyncio.gather(redis.connect(), elastic.connect())
+    app.state.redis = redis.instance
+    app.state.elastic = elastic.instance
     # yield control back to the main program
     yield
     # after the main program is finished, close all connections
