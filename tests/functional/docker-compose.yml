@@ -1,0 +1,52 @@
+version: '3'
+services:
+  service:
+    build: ../../app/.
+    container_name: service-test
+    tty: true
+    ports:
+      - "8080:8080"
+    depends_on:
+      - elastic-test
+      - redis-test
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - cinema-network
+  elastic-test:
+    image: elasticsearch:8.6.2
+    container_name: elastic-test
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms200m -Xmx200m"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    restart: always
+    networks:
+      - cinema-network
+  redis-test:
+    image: redis:7.2-alpine
+    container_name: redis-test
+    restart: unless-stopped
+    networks:
+      - cinema-network
+  tests:
+    build: .
+    depends_on:
+      - service
+    entrypoint: >
+          sh -c "pip install --upgrade pip
+          && python3 /tests/functional/utils/wait_for_es.py
+          && python3 /tests/functional/utils/wait_for_redis.py
+          &&  python3.11 -m pytest /tests/functional"
+    networks:
+      - cinema-network
+volumes:
+  es_data:
+networks:
+  cinema-network:
+    driver: bridge
