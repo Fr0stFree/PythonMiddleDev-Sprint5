@@ -1,4 +1,5 @@
-version: '3'
+version: '3.7'
+name: 'cinema-test'
 
 services:
   service:
@@ -49,7 +50,7 @@ services:
     entrypoint: >
       sh -c "python3 /scripts/wait_for_es.py
       && python3 /scripts/wait_for_redis.py
-      && python3.11 -m pytest /tests/functional"
+      && python3 -m pytest /tests/functional"
     networks:
       - cinema-network
 

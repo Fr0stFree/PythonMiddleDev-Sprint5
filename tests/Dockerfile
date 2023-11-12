@@ -6,11 +6,10 @@ ENV PYTHONUNBUFFERED 1
 
 COPY tests/ /tests
 
-
 COPY app/ /app
 
 RUN pip install --upgrade pip && \
-    pip install -r /tests/requirements.test.txt && \
+    pip install -r /tests/requirements.txt && \
     pip install -r /app/requirements.txt
 
 COPY scripts/ /scripts

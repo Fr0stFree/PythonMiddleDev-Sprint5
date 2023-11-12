@@ -12,7 +12,7 @@ import pytest
     ],
 )
 @pytest.mark.asyncio
-async def test_search_persons(es_write_data, query_data, expected_answer, make_get_request, settings):
+async def test_search_persons(es_write_data, query_data, expected_answer, make_get_request, settings, person_service):
     es_data = [
         {
             "id": str(uuid.uuid4()),
@@ -31,9 +31,9 @@ async def test_search_persons(es_write_data, query_data, expected_answer, make_g
         for _ in range(50)
     ]
 
-    await es_write_data(es_data, settings.es_index_persons)
+    await es_write_data(es_data, person_service.elastic_index)
 
-    response = await make_get_request(settings.app_persons_endpoint, query_data)
+    response = await make_get_request(query_data, settings.app_persons_endpoint)
 
     assert response["status"] == expected_answer["status"]
     assert len(response["body"]) == expected_answer["length"]
@@ -48,7 +48,7 @@ async def test_search_persons(es_write_data, query_data, expected_answer, make_g
     ],
 )
 @pytest.mark.asyncio
-async def test_person_item(es_write_data, query_data, expected_answer, make_get_request_id, settings):
+async def test_person_item(es_write_data, query_data, expected_answer, make_get_request, settings, person_service):
     es_data = [
         {
             "id": "ef86b8ff-3c82-4d31-ad8e-72b69f4e3f91",
@@ -65,8 +65,8 @@ async def test_person_item(es_write_data, query_data, expected_answer, make_get_
             ],
         }
     ]
-    await es_write_data(es_data, settings.es_index_persons)
+    await es_write_data(es_data, person_service.elastic_index)
 
-    response = await make_get_request_id(settings.app_persons_endpoint, query_data)
+    response = await make_get_request(query_data, endpoint=f"{settings.app_persons_endpoint}/{query_data['id']}")
 
     assert response["status"] == expected_answer["status"]
