@@ -14,16 +14,3 @@ per-file-ignores = [
 ]
 max-line-length = 120
 count = true
-
-[tool.pytest.ini_options]
-testpaths = ['tests']
-addopts = [
-    '--cache-clear'
-]
-python_files = ['test_*.py']
-cache_dir = "/tests/.pytest_cache"
-asyncio_mode = "auto"
-filterwarnings = "ignore::DeprecationWarning"
-env = [
-    "PYTHONPATH=src"
-]

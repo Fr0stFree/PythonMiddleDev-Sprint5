@@ -15,7 +15,11 @@ fake.add_provider(person)
 class GenreFactory:
     @classmethod
     def create(cls, id: UUID | None = None) -> Genre:
-        return Genre(id=id if id is not None else fake.uuid4(), name=fake.word(), description=fake.paragraph())
+        return Genre(
+            id=id if id is not None else fake.uuid4(),
+            name=fake.word(),
+            description=fake.paragraph(),
+        )
 
     @classmethod
     def create_short(cls) -> str:
@@ -38,7 +42,8 @@ class PersonFactory:
     @staticmethod
     def create_person_roles() -> NestedPersonRoles:
         return NestedPersonRoles(
-            id=fake.uuid4(), roles=[fake.word() for _ in range(fake.pyint(min_value=1, max_value=3))]
+            id=fake.uuid4(),
+            roles=[fake.word() for _ in range(fake.pyint(min_value=1, max_value=3))],
         )
 
 

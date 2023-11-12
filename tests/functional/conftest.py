@@ -1,77 +1,90 @@
-import pytest
-import aiohttp
 import json
+from unittest.mock import Mock
+
+import aiohttp
+import pytest
+import pytest_asyncio
 from elasticsearch import AsyncElasticsearch
+from functional.settings import TestSettings
+from redis.asyncio import Redis
 
-from dotenv import find_dotenv
-from pydantic import Field
-from pydantic_settings import BaseSettings
-from functional.settings import Settings
+from services import FilmService, GenreService, PersonService
 
 
-def get_es_bulk_query(es_data, es_index, es_id_field) -> list:
+@pytest.fixture(scope="session")
+def settings():
+    return TestSettings()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def es_client(settings):
+    client = Mock(wraps=AsyncElasticsearch(hosts=f"http://{settings.elastic_host}:{settings.elastic_port}"))
+    yield client
+    await client.close()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def redis_client(settings):
+    client = Mock(wraps=Redis(host=settings.redis_host, port=settings.redis_port))
+    yield client
+    await client.close()
+
+
+@pytest.fixture(scope="function")
+def genre_service(settings, redis_client, es_client):
+    return GenreService(redis=redis_client, elastic=es_client)
+
+
+@pytest.fixture(scope="function")
+def film_service(settings, redis_client, es_client):
+    return FilmService(redis=redis_client, elastic=es_client)
+
+
+@pytest.fixture(scope="function")
+def person_service(settings, redis_client, es_client):
+    return PersonService(redis=redis_client, elastic=es_client)
+
+
+@pytest_asyncio.fixture(scope="function")
+async def es_write_data(es_client):
+    async def inner(data, index):
+        bulk_query = _get_es_bulk_query(data, index, "id")
+        str_query = "\n".join(bulk_query) + "\n"
+        response = await es_client.bulk(operations=str_query, refresh=True)
+        if response["errors"]:
+            raise Exception("Ошибка записи данных в Elasticsearch")
+
+    yield inner
+
+    await es_client.options(ignore_status=[400, 404]).delete_by_query(
+        index="*", body={"query": {"match_all": {}}}, refresh=True
+    )
+
+
+@pytest_asyncio.fixture(scope="function")
+async def redis_write_data(redis_client):
+    async def inner(key, data):
+        return await redis_client.set(key, data)
+
+    yield inner
+
+    await redis_client.flushall()
+
+
+@pytest.fixture
+def make_get_request(settings):
+    async def inner(query_data: dict, endpoint: str):
+        url = f"http://{settings.app_host}:{settings.app_port}/api/v1/{endpoint}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=query_data) as response:
+                body = await response.json()
+                return {"body": body, "status": response.status, "headers": response.headers}
+
+    return inner
+
+
+def _get_es_bulk_query(es_data, es_index, es_id_field) -> list:
     bulk_query = []
     for row in es_data:
-        bulk_query.extend(
-            [json.dumps({"index": {"_index": es_index, "_id": row[es_id_field]}}), json.dumps(row)]
-        )
+        bulk_query.extend([json.dumps({"index": {"_index": es_index, "_id": row[es_id_field]}}), json.dumps(row)])
     return bulk_query
-
-
-@pytest.fixture
-def es_write_data():
-    async def inner(data):
-        settings = Settings()
-        bulk_query = get_es_bulk_query(data, settings.es_index_persons, 'id')
-        str_query = '\n'.join(bulk_query) + '\n'
-
-        es_client = AsyncElasticsearch(hosts=f'http://{settings.elastic_host}:{settings.elastic_port}')
-        response = await es_client.bulk(operations=str_query, refresh=True)
-        await es_client.close()
-        if response['errors']:
-            raise Exception('Ошибка записи данных в Elasticsearch')
-    return inner
-
-
-@pytest.fixture
-def es_clear_data():
-    async def inner(index):
-        settings = Settings()
-        es_client = AsyncElasticsearch(hosts=f'http://{settings.elastic_host}:{settings.elastic_port}')
-        await es_client.delete_by_query(index=index, body={"query": {"match_all": {}}})
-        await es_client.close()
-
-    return inner
-
-
-@pytest.fixture
-def make_get_request():
-    async def inner(endpoint, query_data):
-        settings = Settings()
-        url = f'http://{settings.app_host}:{settings.app_port}/api/v1/{endpoint}'
-        session = aiohttp.ClientSession()
-
-        async with session.get(url, params=query_data) as response:
-            body = await response.json()
-            headers = response.headers
-            status = response.status
-        await session.close()
-        return {'body': body, 'status': status, 'headers': headers}
-    return inner
-
-
-@pytest.fixture
-def make_get_request_id():
-    async def inner(endpoint, query_data):
-        settings = Settings()
-        url = f'http://{settings.app_host}:{settings.app_port}/api/v1/{endpoint}/{query_data["id"]}'
-        session = aiohttp.ClientSession()
-
-        async with session.get(url) as response:
-            body = await response.json()
-            headers = response.headers
-            status = response.status
-        await session.close()
-        return {'body': body, 'status': status, 'headers': headers}
-
-    return inner
