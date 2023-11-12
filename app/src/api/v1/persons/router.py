@@ -1,9 +1,8 @@
-from typing import cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
-from services import PersonService, FilmService
+from services import FilmService, PersonService
 
 from ..films.schemas import ShortenedFilm
 from .schemas import DetailedPerson

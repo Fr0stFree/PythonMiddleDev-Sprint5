@@ -1,5 +1,4 @@
 from logging import getLogger
-from typing import Self
 
 from redis.asyncio import Redis
 
@@ -9,7 +8,7 @@ logger = getLogger(__name__)
 
 
 class RedisApp(Singleton):
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, **kwargs) -> None:
         self._host = host
         self._port = port
         self._redis: Redis | None = None
@@ -26,9 +25,8 @@ class RedisApp(Singleton):
         self._redis = None
         logger.info("Connection closed successfully.")
 
-    @classmethod
-    def get_instance(cls) -> Redis:
-        instance: Self = super().get_instance()
-        if instance._redis is None:
-            raise RuntimeError("Redis connection is closed")
-        return instance._redis
+    @property
+    def instance(self) -> Redis:
+        if self._redis is None:
+            raise RuntimeError("Redis is not initialized.")
+        return self._redis

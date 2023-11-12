@@ -1,6 +1,5 @@
 import asyncio
 import datetime as dt
-import json
 from abc import ABC, abstractmethod
 from hashlib import md5
 from typing import Optional, Self, Type
@@ -8,11 +7,11 @@ from uuid import UUID
 
 import orjson
 from elasticsearch import AsyncElasticsearch, NotFoundError
+from fastapi import Request
 from pydantic import BaseModel
 from redis.asyncio import Redis
 
 from core.mixins import Singleton
-from db import ElasticApp, RedisApp
 
 
 class BaseService(Singleton, ABC):
@@ -25,10 +24,10 @@ class BaseService(Singleton, ABC):
         self.elastic = elastic
 
     @classmethod
-    def get_instance(cls) -> Self:
+    def get_instance(cls, request: Request) -> Self:
         """Create an instance automatically if not exist."""
         if cls._instance is None:
-            cls._instance = cls(redis=RedisApp.get_instance(), elastic=ElasticApp.get_instance())
+            cls._instance = cls(redis=request.app.state.redis, elastic=request.app.state.elastic)
         return cls._instance
 
     @property
