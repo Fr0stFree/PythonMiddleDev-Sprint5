@@ -1,5 +1,4 @@
 from logging import getLogger
-from typing import Self
 
 from elasticsearch import AsyncElasticsearch
 
@@ -25,9 +24,8 @@ class ElasticApp(Singleton):
         self._es = None
         logger.info("Connection closed successfully.")
 
-    @classmethod
-    def get_instance(cls) -> AsyncElasticsearch:
-        instance: Self = super().get_instance()
-        if instance._es is None:
-            raise RuntimeError("Elastic Search connection is closed")
-        return instance._es
+    @property
+    def instance(self) -> AsyncElasticsearch:
+        if self._es is None:
+            raise RuntimeError("Elastic search is not initialized.")
+        return self._es
