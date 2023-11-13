@@ -1,6 +1,7 @@
 from logging import getLogger
 
 from elasticsearch import AsyncElasticsearch
+from elasticsearch.exceptions import ConnectionError
 
 from core.mixins import Singleton
 
@@ -15,7 +16,9 @@ class ElasticApp(Singleton):
     async def connect(self) -> None:
         logger.info(f"Connecting to elastic search on {self._connection_url}...")
         self._es = AsyncElasticsearch(self._connection_url)
-        await self._es.ping()
+        if not await self._es.ping():
+            await self._es.close()
+            raise ConnectionError(message=f"Cannot connect to Elastic {self._connection_url}")
         logger.info("Connected successfully.")
 
     async def disconnect(self) -> None:
