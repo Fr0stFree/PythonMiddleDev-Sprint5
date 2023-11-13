@@ -5,7 +5,7 @@ import aiohttp
 import pytest
 import pytest_asyncio
 from elasticsearch import AsyncElasticsearch
-from functional.settings import TestSettings
+from tests.functional.settings import TestSettings
 from redis.asyncio import Redis
 
 from services import FilmService, GenreService, PersonService
