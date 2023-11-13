@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from services import FilmService, PersonService
 
+from api.v1.dependencies import get_pagination_params
 from ..films.schemas import ShortenedFilm
 from .schemas import DetailedPerson
 
@@ -30,13 +31,11 @@ async def person_details(
 )
 async def person_list(
     search: str = Query(None, max_length=50),
-    page_number: int = Query(None, ge=0),
-    page_size: int = Query(None, ge=1),
+    pagination_params: dict = Depends(get_pagination_params),
     person_service: PersonService = Depends(PersonService.get_instance),
 ) -> list[DetailedPerson]:
-    params = {"size": page_size, "from": page_number}
     query = {"match_all": {}} if search is None else {"multi_match": {"query": search, "fields": ["name"]}}
-    persons = await person_service.get_many(query, params)
+    persons = await person_service.get_many(query, pagination_params)
     return persons
 
 
@@ -49,12 +48,10 @@ async def person_films(
     person_id: UUID = Path(...),
     person_service: PersonService = Depends(PersonService.get_instance),
     film_service: FilmService = Depends(FilmService.get_instance),
-    page_number: int = Query(None, ge=0),
-    page_size: int = Query(None, ge=1),
+    pagination_params: dict = Depends(get_pagination_params),
 ) -> list[ShortenedFilm]:
     person = await person_service.get_by_id(person_id)
     if not person:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
-    params = {"size": page_size, "from": page_number}
-    films = await film_service.get_films_by_person(person_id, params)
+    films = await film_service.get_films_by_person(person_id, pagination_params)
     return films
