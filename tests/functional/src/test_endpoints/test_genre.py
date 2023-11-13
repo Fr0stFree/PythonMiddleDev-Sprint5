@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 import pytest
-from functional.src.factories import GenreFactory
+from tests.functional.src.factories import GenreFactory
 
 
 @pytest.mark.asyncio

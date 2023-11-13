@@ -1,8 +1,8 @@
 import pytest
-from functional.src.factories import PersonFactory
 
 from models import Person
 from services import PersonService
+from tests.functional.src.factories import PersonFactory
 
 
 @pytest.mark.asyncio
