@@ -1,8 +1,8 @@
 import pytest
-from functional.src.factories import FilmFactory
 
 from models import Film
 from services import FilmService
+from tests.functional.src.factories import FilmFactory
 
 
 @pytest.mark.asyncio

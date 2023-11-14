@@ -1,8 +1,8 @@
 import pytest
-from functional.src.factories import GenreFactory
 
 from models import Genre
 from services import GenreService
+from tests.functional.src.factories import GenreFactory
 
 
 @pytest.mark.asyncio
