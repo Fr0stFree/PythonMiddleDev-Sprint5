@@ -14,8 +14,8 @@ async def test_get_existing_genre_from_elastic(es_write_data, genre_service: Gen
 
     assert isinstance(result, Genre)
     assert result == genre
-    genre_service.redis.get.assert_called_once_with(f"genre#{genre.id}")
-    genre_service.elastic.get.assert_called_once_with(index=genre_service.elastic_index, id=str(genre.id))
+    genre_service.cache_app.get_one.assert_called_once_with(genre.id, genre_service.model_class_name)
+    genre_service.search_engine.get_one.assert_called_once_with(str(genre.id), genre_service.elastic_index)
 
 
 @pytest.mark.asyncio
@@ -27,8 +27,8 @@ async def test_get_existing_genre_from_redis(redis_write_data, genre_service: Ge
 
     assert isinstance(result, Genre)
     assert result == genre
-    genre_service.redis.get.assert_called_once_with(f"genre#{genre.id}")
-    genre_service.elastic.get.assert_not_called()
+    genre_service.cache_app.get_one.assert_called_once_with(genre.id, genre_service.model_class_name)
+    genre_service.search_engine.get_one.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -38,5 +38,5 @@ async def test_get_non_existing_genre(redis_write_data, genre_service: GenreServ
     result = await genre_service.get_by_id(genre.id)
 
     assert result is None
-    genre_service.redis.get.assert_called_once_with(f"genre#{genre.id}")
-    genre_service.elastic.get.assert_called_once_with(index=genre_service.elastic_index, id=str(genre.id))
+    genre_service.cache_app.get_one.assert_called_once_with(genre.id, genre_service.model_class_name)
+    genre_service.search_engine.get_one.assert_called_once_with(str(genre.id), genre_service.elastic_index)
