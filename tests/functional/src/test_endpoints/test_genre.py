@@ -2,9 +2,8 @@ from http import HTTPStatus
 
 import pytest
 
-pytestmark = pytest.mark.asyncio
 
-
+@pytest.mark.asyncio
 async def test_query_genre(es_write_data, make_get_request, settings, genre_service, genre):
     await es_write_data([genre.model_dump(mode="json")], index=genre_service.elastic_index)
 
@@ -14,6 +13,7 @@ async def test_query_genre(es_write_data, make_get_request, settings, genre_serv
     assert response["body"] == genre.model_dump(mode="json")
 
 
+@pytest.mark.asyncio
 async def test_query_not_existing_genre(es_write_data, make_get_request, settings, genre_service, genre):
     fake_id = "00000000-0000-0000-0000-000000000000"
     await es_write_data([genre.model_dump(mode="json")], index=genre_service.elastic_index)
@@ -23,6 +23,7 @@ async def test_query_not_existing_genre(es_write_data, make_get_request, setting
     assert response["status"] == HTTPStatus.NOT_FOUND
 
 
+@pytest.mark.asyncio
 async def test_query_invalid_uuid_genre(make_get_request, settings):
     fake_id = "some-bullshit"
 
@@ -31,6 +32,7 @@ async def test_query_invalid_uuid_genre(make_get_request, settings):
     assert response["status"] == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
+@pytest.mark.asyncio
 async def test_query_many_genres(es_write_data, make_get_request, settings, genre_service, genres):
     await es_write_data([genre.model_dump(mode="json") for genre in genres], index=genre_service.elastic_index)
 
@@ -40,6 +42,7 @@ async def test_query_many_genres(es_write_data, make_get_request, settings, genr
     assert len(response["body"]) == len(genres)
 
 
+@pytest.mark.asyncio
 async def test_query_specific_genres(es_write_data, make_get_request, settings, genre_service, genres):
     await es_write_data([genre.model_dump(mode="json") for genre in genres], index=genre_service.elastic_index)
 
@@ -50,6 +53,7 @@ async def test_query_specific_genres(es_write_data, make_get_request, settings, 
     assert response["body"][0] == genres[0].model_dump(exclude={"description"}, mode="json")
 
 
+@pytest.mark.asyncio
 async def test_query_not_existing_genres(es_write_data, make_get_request, settings, genre_service, genres):
     await es_write_data([genre.model_dump(mode="json") for genre in genres], index=genre_service.elastic_index)
 

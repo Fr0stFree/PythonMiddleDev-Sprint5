@@ -2,9 +2,8 @@ import pytest
 
 from models import Film
 
-pytestmark = pytest.mark.asyncio
 
-
+@pytest.mark.asyncio
 async def test_get_existing_film_from_elastic(es_write_data, film_service, film):
     await es_write_data([film.model_dump(mode="json")], index=film_service.elastic_index)
 
@@ -16,6 +15,7 @@ async def test_get_existing_film_from_elastic(es_write_data, film_service, film)
     film_service.elastic.get.assert_called_once_with(index=film_service.elastic_index, id=str(film.id))
 
 
+@pytest.mark.asyncio
 async def test_get_existing_film_from_redis(redis_write_data, film_service, film):
     await redis_write_data(f"film#{film.id}", film.model_dump_json())
 
@@ -27,6 +27,7 @@ async def test_get_existing_film_from_redis(redis_write_data, film_service, film
     film_service.elastic.get.assert_not_called()
 
 
+@pytest.mark.asyncio
 async def test_get_non_existing_film(film_service, film):
     result = await film_service.get_by_id(film.id)
 
