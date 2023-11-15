@@ -2,6 +2,8 @@ import uuid
 
 import pytest
 
+pytestmark = pytest.mark.asyncio
+
 
 @pytest.mark.parametrize(
     "query_data, expected_answer",
@@ -11,7 +13,6 @@ import pytest
         ({"page_size": "20"}, {"status": 200, "length": 20}),
     ],
 )
-@pytest.mark.asyncio
 async def test_search_persons(es_write_data, query_data, expected_answer, make_get_request, settings, person_service):
     es_data = [
         {
@@ -47,7 +48,6 @@ async def test_search_persons(es_write_data, query_data, expected_answer, make_g
         ({"id": "200"}, {"status": 422}),
     ],
 )
-@pytest.mark.asyncio
 async def test_person_item(es_write_data, query_data, expected_answer, make_get_request, settings, person_service):
     es_data = [
         {

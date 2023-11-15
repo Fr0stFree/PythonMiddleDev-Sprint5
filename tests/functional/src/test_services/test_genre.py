@@ -4,8 +4,9 @@ from models import Genre
 from services import GenreService
 from tests.functional.src.factories import GenreFactory
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 async def test_get_existing_genre_from_elastic(es_write_data, genre_service: GenreService) -> None:
     genre = GenreFactory.create()
     await es_write_data([genre.model_dump(mode="json")], index=genre_service.elastic_index)
@@ -18,7 +19,6 @@ async def test_get_existing_genre_from_elastic(es_write_data, genre_service: Gen
     genre_service.elastic.get.assert_called_once_with(index=genre_service.elastic_index, id=str(genre.id))
 
 
-@pytest.mark.asyncio
 async def test_get_existing_genre_from_redis(redis_write_data, genre_service: GenreService) -> None:
     genre = GenreFactory.create()
     await redis_write_data(f"genre#{genre.id}", genre.model_dump_json())
@@ -31,7 +31,6 @@ async def test_get_existing_genre_from_redis(redis_write_data, genre_service: Ge
     genre_service.elastic.get.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_get_non_existing_genre(redis_write_data, genre_service: GenreService) -> None:
     genre = GenreFactory.create()
 
