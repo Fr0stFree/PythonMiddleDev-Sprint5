@@ -25,12 +25,12 @@ class AsyncSearchEngine(ABC):
         pass
 
     @abstractmethod
-    async def get_one(self, id: str, index: str):
+    async def get_one(self, id: str, index: str) -> dict:
         """Get model data from search engine"""
         pass
 
     @abstractmethod
-    async def get_many(self, query: dict, params: dict, index: str):
+    async def get_many(self, query: dict, params: dict, index: str) -> list[dict]:
         """Get models data from search engine"""
         pass
 
@@ -59,13 +59,13 @@ class ElasticApp(Singleton, AsyncSearchEngine):
             raise RuntimeError("Elastic search is not initialized.")
         return self.client
 
-    async def get_one(self, id: str, index: str):
+    async def get_one(self, id: str, index: str) -> dict:
         try:
             doc = await self.client.get(index=index, id=id)
             return doc["_source"]
         except NotFoundError:
             return None
 
-    async def get_many(self, query: dict, params: dict, index: str):
+    async def get_many(self, query: dict, params: dict, index: str) -> list[dict]:
         docs = await self.client.search(index=index, query=query, params=params)
         return [doc["_source"] for doc in docs["hits"]["hits"]]
