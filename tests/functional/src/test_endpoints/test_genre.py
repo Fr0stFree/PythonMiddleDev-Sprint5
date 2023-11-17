@@ -1,13 +1,11 @@
 from http import HTTPStatus
 
 import pytest
-from tests.functional.src.factories import GenreFactory
 
 pytestmark = pytest.mark.asyncio
 
 
-async def test_query_genre(es_write_data, make_get_request, settings, genre_service):
-    genre = GenreFactory.create()
+async def test_query_genre(es_write_data, make_get_request, settings, genre_service, genre):
     await es_write_data([genre.model_dump(mode="json")], index=genre_service.elastic_index)
 
     response = await make_get_request({"id": str(genre.id)}, endpoint=f"{settings.app_genres_endpoint}/{genre.id}")
@@ -16,8 +14,7 @@ async def test_query_genre(es_write_data, make_get_request, settings, genre_serv
     assert response["body"] == genre.model_dump(mode="json")
 
 
-async def test_query_not_existing_genre(es_write_data, make_get_request, settings, genre_service):
-    genre = GenreFactory.create()
+async def test_query_not_existing_genre(es_write_data, make_get_request, settings, genre_service, genre):
     fake_id = "00000000-0000-0000-0000-000000000000"
     await es_write_data([genre.model_dump(mode="json")], index=genre_service.elastic_index)
 
@@ -34,8 +31,7 @@ async def test_query_invalid_uuid_genre(make_get_request, settings):
     assert response["status"] == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
-async def test_query_many_genres(es_write_data, make_get_request, settings, genre_service):
-    genres = [GenreFactory.create() for _ in range(10)]
+async def test_query_many_genres(es_write_data, make_get_request, settings, genre_service, genres):
     await es_write_data([genre.model_dump(mode="json") for genre in genres], index=genre_service.elastic_index)
 
     response = await make_get_request({}, endpoint=settings.app_genres_endpoint)
@@ -44,8 +40,7 @@ async def test_query_many_genres(es_write_data, make_get_request, settings, genr
     assert len(response["body"]) == len(genres)
 
 
-async def test_query_specific_genres(es_write_data, make_get_request, settings, genre_service):
-    genres = [GenreFactory.create() for _ in range(10)]
+async def test_query_specific_genres(es_write_data, make_get_request, settings, genre_service, genres):
     await es_write_data([genre.model_dump(mode="json") for genre in genres], index=genre_service.elastic_index)
 
     response = await make_get_request({"search": genres[0].name}, endpoint=settings.app_genres_endpoint)
@@ -55,8 +50,7 @@ async def test_query_specific_genres(es_write_data, make_get_request, settings, 
     assert response["body"][0] == genres[0].model_dump(exclude={"description"}, mode="json")
 
 
-async def test_query_not_existing_genres(es_write_data, make_get_request, settings, genre_service):
-    genres = [GenreFactory.create() for _ in range(10)]
+async def test_query_not_existing_genres(es_write_data, make_get_request, settings, genre_service, genres):
     await es_write_data([genre.model_dump(mode="json") for genre in genres], index=genre_service.elastic_index)
 
     response = await make_get_request({"search": "qweuiasdnasedkjhqwwe"}, endpoint=settings.app_genres_endpoint)

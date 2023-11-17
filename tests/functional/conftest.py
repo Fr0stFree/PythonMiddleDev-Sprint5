@@ -6,6 +6,7 @@ import pytest
 import pytest_asyncio
 from elasticsearch import AsyncElasticsearch
 from tests.functional.settings import TestSettings
+from tests.functional.src.factories import FilmFactory, GenreFactory, PersonFactory
 from tests.functional.testdata.es_mapping import es_mappings
 from redis.asyncio import Redis
 
@@ -37,13 +38,43 @@ def genre_service(settings, redis_client, es_client):
 
 
 @pytest.fixture(scope="function")
+def genre(settings):
+    return GenreFactory.create()
+
+
+@pytest.fixture(scope="function")
+def genres(settings):
+    return [GenreFactory.create() for _ in range(10)]
+
+
+@pytest.fixture(scope="function")
 def film_service(settings, redis_client, es_client):
     return FilmService(redis=redis_client, elastic=es_client)
 
 
 @pytest.fixture(scope="function")
+def film(settings):
+    return FilmFactory.create()
+
+
+@pytest.fixture(scope="function")
+def films(settings):
+    return [FilmFactory.create() for _ in range(10)]
+
+
+@pytest.fixture(scope="function")
 def person_service(settings, redis_client, es_client):
     return PersonService(redis=redis_client, elastic=es_client)
+
+
+@pytest.fixture(scope="function")
+def person(settings):
+    return PersonFactory.create()
+
+
+@pytest.fixture(scope="function")
+def persons(settings):
+    return [PersonFactory.create() for _ in range(10)]
 
 
 @pytest_asyncio.fixture(scope="function")
