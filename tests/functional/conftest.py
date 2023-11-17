@@ -4,7 +4,8 @@ from unittest.mock import Mock
 import aiohttp
 import pytest
 import pytest_asyncio
-from elasticsearch import AsyncElasticsearch
+from db.elastic import ElasticApp
+from db.redis import RedisApp
 from tests.functional.settings import TestSettings
 from tests.functional.src.factories import FilmFactory, GenreFactory, PersonFactory
 from tests.functional.testdata.es_mapping import es_mappings
@@ -20,21 +21,23 @@ def settings():
 
 @pytest_asyncio.fixture(scope="function")
 async def es_client(settings):
-    client = Mock(wraps=AsyncElasticsearch(hosts=f"http://{settings.elastic_host}:{settings.elastic_port}"))
-    yield client
-    await client.close()
+    _search_engine = Mock(wraps=ElasticApp(host=settings.elastic_host, port=settings.elastic_port))
+    await _search_engine.connect()
+    yield _search_engine
+    await _search_engine.disconnect()
 
 
 @pytest_asyncio.fixture(scope="function")
 async def redis_client(settings):
-    client = Mock(wraps=Redis(host=settings.redis_host, port=settings.redis_port))
-    yield client
-    await client.close()
+    _cache_app = Mock(wraps=RedisApp(host=settings.redis_host, port=settings.redis_port))
+    await _cache_app.connect()
+    yield _cache_app
+    await _cache_app.disconnect()
 
 
 @pytest.fixture(scope="function")
 def genre_service(settings, redis_client, es_client):
-    return GenreService(redis=redis_client, elastic=es_client)
+    return GenreService(cache_app=redis_client, search_engine=es_client)
 
 
 @pytest.fixture(scope="function")
@@ -49,7 +52,7 @@ def genres(settings):
 
 @pytest.fixture(scope="function")
 def film_service(settings, redis_client, es_client):
-    return FilmService(redis=redis_client, elastic=es_client)
+    return FilmService(cache_app=redis_client, search_engine=es_client)
 
 
 @pytest.fixture(scope="function")
@@ -64,7 +67,7 @@ def films(settings):
 
 @pytest.fixture(scope="function")
 def person_service(settings, redis_client, es_client):
-    return PersonService(redis=redis_client, elastic=es_client)
+    return PersonService(cache_app=redis_client, search_engine=es_client)
 
 
 @pytest.fixture(scope="function")
@@ -79,6 +82,8 @@ def persons(settings):
 
 @pytest_asyncio.fixture(scope="function")
 async def es_write_data(es_client):
+    client = es_client.instance
+
     async def inner(data, index):
         bulk_query = _get_es_bulk_query(data, index, "id")
         str_query = "\n".join(bulk_query) + "\n"
@@ -91,19 +96,21 @@ async def es_write_data(es_client):
 
     yield inner
 
-    await es_client.options(ignore_status=[400, 404]).delete_by_query(
+    await client.options(ignore_status=[400, 404]).delete_by_query(
         index="*", body={"query": {"match_all": {}}}, refresh=True
     )
 
 
 @pytest_asyncio.fixture(scope="function")
 async def redis_write_data(redis_client):
+    client = redis_client.instance
+
     async def inner(key, data):
-        return await redis_client.set(key, data)
+        return await client.set(key, data)
 
     yield inner
 
-    await redis_client.flushall()
+    await client.flushall()
 
 
 @pytest.fixture

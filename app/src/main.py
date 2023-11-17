@@ -31,8 +31,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     elastic = ElasticApp(host=settings.elastic_host, port=settings.elastic_port)
     for app_to_connect in [redis, elastic]:
         await create_connection(app_to_connect)
-    app.state.redis = redis.instance
-    app.state.elastic = elastic.instance
+    app.state.cache_app = redis
+    app.state.search_engine = elastic
     # yield control back to the main program
     yield
     # after the main program is finished, close all connections

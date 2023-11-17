@@ -1,15 +1,13 @@
-import asyncio
 import datetime as dt
 from abc import ABC, abstractmethod
-from hashlib import md5
 from typing import Optional, Self, Type
 from uuid import UUID
 
 import orjson
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from db.elastic import AsyncSearchEngine
+from db.redis import CacheApp
 from fastapi import Request
 from pydantic import BaseModel
-from redis.asyncio import Redis
 
 from core.mixins import Singleton
 
@@ -17,17 +15,18 @@ from core.mixins import Singleton
 class BaseService(Singleton, ABC):
     def __init__(
         self,
-        redis: Redis,
-        elastic: AsyncElasticsearch,
+        cache_app: CacheApp,
+        search_engine: AsyncSearchEngine,
     ) -> None:
-        self.redis = redis
-        self.elastic = elastic
+        self.cache_app = cache_app
+        self.search_engine = search_engine
 
     @classmethod
     def get_instance(cls, request: Request) -> Self:
         """Create an instance automatically if not exist."""
         if cls._instance is None:
-            cls._instance = cls(redis=request.app.state.redis, elastic=request.app.state.elastic)
+            cls._instance = cls(cache_app=request.app.state.cache_app,
+                                search_engine=request.app.state.search_engine)
         return cls._instance
 
     @property
@@ -45,63 +44,32 @@ class BaseService(Singleton, ABC):
     def cache_expires(self) -> dt.timedelta:
         pass
 
+    @property
+    def model_class_name(self) -> str:
+        return self.model_class.__name__.lower()
+
     async def get_by_id(self, id: UUID) -> Optional[model_class]:
-        if (model := await self._get_cached_model(id)) is not None:
-            return model
-
-        if (model := await self._get_model(id)) is not None:
-            asyncio.create_task(self._cache_model(model))
-            return model
-
-    async def _get_cached_model(self, id: UUID) -> Optional[model_class]:
-        key = self._build_single_model_cache_key(id)
-        if (model := await self.redis.get(key)) is not None:
+        model = await self.cache_app.get_one(id, self.model_class_name)
+        if model:
             return self.model_class.model_validate_json(model)
 
-    async def _cache_model(self, model: model_class) -> None:
-        key = self._build_single_model_cache_key(model.id)
-        await self.redis.set(key, model.model_dump_json(), self.cache_expires)
+        model = await self.search_engine.get_one(str(id), self.elastic_index)
+        if model:
+            model = self.model_class.model_validate(model)
+            await self.cache_app.set_one(model.id, model.model_dump_json(), self.model_class_name, self.cache_expires)
+            return model
 
-    async def _get_model(self, id: UUID) -> Optional[model_class]:
-        try:
-            doc = await self.elastic.get(index=self.elastic_index, id=str(id))
-            return self.model_class.model_validate(doc["_source"])
-        except NotFoundError:
-            return None
+        return None
 
     async def get_many(self, query: dict, params: dict) -> list[model_class]:
-        if (models := await self._get_cached_models(query, params)) is not None:
+        models = await self.cache_app.get_many(query, params, self.model_class_name)
+        if models:
+            return [self.model_class.model_validate(orjson.loads(model)) for model in models]
+
+        models = await self.search_engine.get_many(query, params, self.elastic_index)
+        if models:
+            models = [self.model_class.model_validate(model) for model in models]
+            await self.cache_app.set_many(query, params, [model.model_dump_json() for model in models],
+                                          self.model_class_name, self.cache_expires)
             return models
-
-        if (models := await self._get_models(query, params)) is not None:
-            asyncio.create_task(self._cache_models(models, query, params))
-            return models
-
-    async def _get_cached_models(self, query: dict, params: dict) -> list[model_class] | None:
-        key = self._build_many_models_cache_key(query, params)
-        if not await self.redis.exists(key):
-            return None
-
-        models = await self.redis.lrange(key, 0, -1)
-        return [self.model_class.model_validate(orjson.loads(model)) for model in models]
-
-    async def _cache_models(self, models: list[model_class], query=None, params=None) -> None:
-        if not models:  # no need to cache empty list
-            return
-
-        key = self._build_many_models_cache_key(query, params)
-        await self.redis.lpush(key, *[model.model_dump_json() for model in models])
-        await self.redis.expire(key, self.cache_expires)
-
-    async def _get_models(self, query: dict, params: dict) -> list[model_class]:
-        docs = await self.elastic.search(index=self.elastic_index, query=query, params=params)
-        return [self.model_class.model_validate(doc["_source"]) for doc in docs["hits"]["hits"]]
-
-    def _build_single_model_cache_key(self, id: UUID) -> str:
-        return f"{self.model_class.__name__.lower()}#{id}"
-
-    def _build_many_models_cache_key(self, query: dict = None, params: dict = None) -> str:
-        query = query or {}
-        params = params or {}
-        hashed_request = md5((orjson.dumps(query) + orjson.dumps(params)), usedforsecurity=False).hexdigest()
-        return f"{self.model_class.__name__.lower()}s#{hashed_request}"
+        return []
