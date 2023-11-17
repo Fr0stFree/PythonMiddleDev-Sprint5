@@ -7,6 +7,9 @@ import pytest_asyncio
 from db.elastic import ElasticApp
 from db.redis import RedisApp
 from tests.functional.settings import TestSettings
+from tests.functional.src.factories import FilmFactory, GenreFactory, PersonFactory
+from tests.functional.testdata.es_mapping import es_mappings
+from redis.asyncio import Redis
 
 from services import FilmService, GenreService, PersonService
 
@@ -38,13 +41,43 @@ def genre_service(settings, redis_client, es_client):
 
 
 @pytest.fixture(scope="function")
+def genre(settings):
+    return GenreFactory.create()
+
+
+@pytest.fixture(scope="function")
+def genres(settings):
+    return [GenreFactory.create() for _ in range(10)]
+
+
+@pytest.fixture(scope="function")
 def film_service(settings, redis_client, es_client):
     return FilmService(cache_app=redis_client, search_engine=es_client)
 
 
 @pytest.fixture(scope="function")
+def film(settings):
+    return FilmFactory.create()
+
+
+@pytest.fixture(scope="function")
+def films(settings):
+    return [FilmFactory.create() for _ in range(10)]
+
+
+@pytest.fixture(scope="function")
 def person_service(settings, redis_client, es_client):
     return PersonService(cache_app=redis_client, search_engine=es_client)
+
+
+@pytest.fixture(scope="function")
+def person(settings):
+    return PersonFactory.create()
+
+
+@pytest.fixture(scope="function")
+def persons(settings):
+    return [PersonFactory.create() for _ in range(10)]
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -54,7 +87,10 @@ async def es_write_data(es_client):
     async def inner(data, index):
         bulk_query = _get_es_bulk_query(data, index, "id")
         str_query = "\n".join(bulk_query) + "\n"
-        response = await client.bulk(operations=str_query, refresh=True)
+        await es_client.indices.delete(index=index, allow_no_indices=True, ignore_unavailable=True)
+        await es_client.indices.create(index=index, mappings=es_mappings[index])
+
+        response = await es_client.bulk(operations=str_query, refresh=True)
         if response["errors"]:
             raise Exception("Ошибка записи данных в Elasticsearch")
 

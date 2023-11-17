@@ -1,10 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from services import FilmService, PersonService
 
-from api.v1.dependencies import get_pagination_params
+from api.v1.dependencies import get_pagination_params, get_search_query_by_name
 from ..films.schemas import ShortenedFilm
 from .schemas import DetailedPerson
 
@@ -30,12 +30,11 @@ async def person_details(
     description="Returns a list persons",
 )
 async def person_list(
-    search: str = Query(None, max_length=50),
+    search: dict = Depends(get_search_query_by_name),
     pagination_params: dict = Depends(get_pagination_params),
     person_service: PersonService = Depends(PersonService.get_instance),
 ) -> list[DetailedPerson]:
-    query = {"match_all": {}} if search is None else {"multi_match": {"query": search, "fields": ["name"]}}
-    persons = await person_service.get_many(query, pagination_params)
+    persons = await person_service.get_many(search, pagination_params)
     return persons
 
 
