@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from logging import getLogger
+from typing import List, Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from elasticsearch.exceptions import ConnectionError
@@ -25,12 +26,12 @@ class AsyncSearchEngine(ABC):
         pass
 
     @abstractmethod
-    async def get_one(self, id: str, index: str) -> dict:
+    async def get_one(self, id: str, index: str) -> Optional[dict]:
         """Get model data from search engine"""
         pass
 
     @abstractmethod
-    async def get_many(self, query: dict, params: dict, index: str) -> list[dict]:
+    async def get_many(self, query: dict, params: dict, index: str) -> List[dict]:
         """Get models data from search engine"""
         pass
 
@@ -59,13 +60,13 @@ class ElasticApp(Singleton, AsyncSearchEngine):
             raise RuntimeError("Elastic search is not initialized.")
         return self.client
 
-    async def get_one(self, id: str, index: str) -> dict:
+    async def get_one(self, id: str, index: str) -> Optional[dict]:
         try:
             doc = await self.client.get(index=index, id=id)
             return doc["_source"]
         except NotFoundError:
             return None
 
-    async def get_many(self, query: dict, params: dict, index: str) -> list[dict]:
+    async def get_many(self, query: dict, params: dict, index: str) -> List[dict]:
         docs = await self.client.search(index=index, query=query, params=params)
         return [doc["_source"] for doc in docs["hits"]["hits"]]

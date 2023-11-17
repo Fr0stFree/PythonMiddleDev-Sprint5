@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import datetime as dt
 from logging import getLogger
 from hashlib import md5
+from typing import Optional, List
 from uuid import UUID
 
 import orjson
@@ -29,7 +30,7 @@ class CacheApp(ABC):
         pass
 
     @abstractmethod
-    async def get_one(self, id: UUID, model_name: str) -> str:
+    async def get_one(self, id: UUID, model_name: str) -> Optional[str]:
         """Get model data from cache"""
         pass
 
@@ -39,7 +40,7 @@ class CacheApp(ABC):
         pass
 
     @abstractmethod
-    async def get_many(self, query: dict, params: dict, model_name: str) -> list[str]:
+    async def get_many(self, query: dict, params: dict, model_name: str) -> Optional[List[str]]:
         """Get models data from cache"""
         pass
 
@@ -84,7 +85,7 @@ class RedisApp(Singleton, CacheApp):
             raise RuntimeError("Redis is not initialized.")
         return self.client
 
-    async def get_one(self, id: UUID, model_name) -> str:
+    async def get_one(self, id: UUID, model_name) -> Optional[str]:
         key = self._build_single_model_cache_key(id, model_name)
         if (model := await self.client.get(key)) is not None:
             return model
@@ -93,7 +94,7 @@ class RedisApp(Singleton, CacheApp):
         key = self._build_single_model_cache_key(id, model_name)
         await self.client.set(key, data, cache_expires)
 
-    async def get_many(self, query: dict, params: dict, model_name) -> list[str]:
+    async def get_many(self, query: dict, params: dict, model_name) -> Optional[List[str]]:
         key = self._build_many_models_cache_key(query, params, model_name)
         if not await self.client.exists(key):
             return None
