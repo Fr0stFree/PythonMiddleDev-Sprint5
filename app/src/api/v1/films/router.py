@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from services import FilmService
 
-from api.v1.dependencies import get_pagination_params
+from api.v1.dependencies import get_pagination_params, get_search_query
 from .schemas import DetailedFilm, ShortenedFilm
 
 router = APIRouter()
@@ -34,12 +34,11 @@ async def film_details(
     description="Returns a list films",
 )
 async def film_list(
-    search: Annotated[str | None, Query(max_length=50)] = None,
+    search: dict = Depends(get_search_query),
     sort: Annotated[Literal["imdb_rating:asc", "imdb_rating:desc"], Query()] = "imdb_rating:asc",
     film_service: FilmService = Depends(FilmService.get_instance),
     pagination_params: dict = Depends(get_pagination_params),
 ) -> list[ShortenedFilm]:
     params = {"sort": sort, **pagination_params}
-    query = {"match_all": {}} if search is None else {"multi_match": {"query": search}}
-    films = await film_service.get_many(query, params)
+    films = await film_service.get_many(search, params)
     return films
