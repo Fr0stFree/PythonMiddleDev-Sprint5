@@ -7,6 +7,7 @@ import pytest_asyncio
 from elasticsearch import AsyncElasticsearch
 from tests.functional.settings import TestSettings
 from tests.functional.src.factories import FilmFactory, GenreFactory, PersonFactory
+from tests.functional.testdata.es_mapping import es_mappings
 from redis.asyncio import Redis
 
 from services import FilmService, GenreService, PersonService
@@ -81,6 +82,9 @@ async def es_write_data(es_client):
     async def inner(data, index):
         bulk_query = _get_es_bulk_query(data, index, "id")
         str_query = "\n".join(bulk_query) + "\n"
+        await es_client.indices.delete(index=index, allow_no_indices=True, ignore_unavailable=True)
+        await es_client.indices.create(index=index, mappings=es_mappings[index])
+
         response = await es_client.bulk(operations=str_query, refresh=True)
         if response["errors"]:
             raise Exception("Ошибка записи данных в Elasticsearch")
