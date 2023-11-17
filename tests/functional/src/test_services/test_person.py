@@ -4,8 +4,9 @@ from models import Person
 from services import PersonService
 from tests.functional.src.factories import PersonFactory
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 async def test_get_existing_person_from_elastic(es_write_data, person_service: PersonService) -> None:
     person = PersonFactory.create()
     await es_write_data([person.model_dump(mode="json")], index=person_service.elastic_index)
@@ -18,7 +19,6 @@ async def test_get_existing_person_from_elastic(es_write_data, person_service: P
     person_service.elastic.get.assert_called_once_with(index=person_service.elastic_index, id=str(person.id))
 
 
-@pytest.mark.asyncio
 async def test_get_existing_person_from_redis(redis_write_data, person_service: PersonService) -> None:
     person = PersonFactory.create()
     await redis_write_data(f"person#{person.id}", person.model_dump_json())
@@ -31,7 +31,6 @@ async def test_get_existing_person_from_redis(redis_write_data, person_service: 
     person_service.elastic.get.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_get_non_existing_person(redis_write_data, person_service: PersonService) -> None:
     person = PersonFactory.create()
 
