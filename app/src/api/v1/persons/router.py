@@ -1,9 +1,10 @@
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from services import FilmService, PersonService
-
+from core.auth import security_jwt
 from api.v1.dependencies import get_pagination_params, get_search_query_by_name
 from ..films.schemas import ShortenedFilm
 from .schemas import DetailedPerson
@@ -16,7 +17,9 @@ router = APIRouter()
     description="Returns information about a specific person by ID",
 )
 async def person_details(
-    person_id: UUID = Path(...), person_service: PersonService = Depends(PersonService.get_instance)
+    user: Annotated[dict, Depends(security_jwt)],
+    person_id: UUID = Path(...),
+    person_service: PersonService = Depends(PersonService.get_instance),
 ) -> DetailedPerson:
     person = await person_service.get_by_id(person_id)
     if not person:
@@ -30,6 +33,7 @@ async def person_details(
     description="Returns a list persons",
 )
 async def person_list(
+    user: Annotated[dict, Depends(security_jwt)],
     search: dict = Depends(get_search_query_by_name),
     pagination_params: dict = Depends(get_pagination_params),
     person_service: PersonService = Depends(PersonService.get_instance),
@@ -44,6 +48,7 @@ async def person_list(
     description="Returns a list of films for a specific person by ID",
 )
 async def person_films(
+    user: Annotated[dict, Depends(security_jwt)],
     person_id: UUID = Path(...),
     person_service: PersonService = Depends(PersonService.get_instance),
     film_service: FilmService = Depends(FilmService.get_instance),

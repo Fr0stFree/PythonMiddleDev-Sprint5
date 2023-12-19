@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from services import FilmService
-
+from core.auth import security_jwt
 from api.v1.dependencies import get_pagination_params, get_search_query
 from .schemas import DetailedFilm, ShortenedFilm
 
@@ -16,6 +16,7 @@ router = APIRouter()
     description="Returns information about a specific film by ID",
 )
 async def film_details(
+    user: Annotated[dict, Depends(security_jwt)],
     film_id: UUID = Path(...), film_service: FilmService = Depends(FilmService.get_instance)
 ) -> DetailedFilm:
     film = await film_service.get_by_id(film_id)
@@ -34,6 +35,7 @@ async def film_details(
     description="Returns a list films",
 )
 async def film_list(
+    user: Annotated[dict, Depends(security_jwt)],
     search: dict = Depends(get_search_query),
     sort: Annotated[Literal["imdb_rating:asc", "imdb_rating:desc"], Query()] = "imdb_rating:asc",
     film_service: FilmService = Depends(FilmService.get_instance),
