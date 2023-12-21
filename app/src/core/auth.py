@@ -25,7 +25,6 @@ class JWTBearer(HTTPBearer):
 
     async def __call__(self, request: Request) -> dict:
         credentials: HTTPAuthorizationCredentials = await super().__call__(request)
-        print(credentials)
         if not credentials:
             raise HTTPException(status_code=http.HTTPStatus.FORBIDDEN, detail='Invalid authorization code.')
         if not credentials.scheme == 'Bearer':
@@ -41,9 +40,3 @@ class JWTBearer(HTTPBearer):
 
 
 security_jwt = JWTBearer()
-
-# {
-#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZXZAZGV2LmNvbSIsImlhdCI6MTcwMzAyMzM0NSwibmJmIjoxNzAzMDIzMzQ1LCJqdGkiOiIzNjkzMjVjOS1lYWIxLTQyYTgtYWFhNS1jOTQzNTAxY2RiMzQiLCJleHAiOjE3MDMyODI1NDUsInR5cGUiOiJhY2Nlc3MiLCJmcmVzaCI6ZmFsc2V9.Tu8Io4UpmuTyhynS7mjMH_2yfZyFs6dWhsSZhxV-HP4",
-#     "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZXZAZGV2LmNvbSIsImlhdCI6MTcwMzAyMzM0NSwibmJmIjoxNzAzMDIzMzQ1LCJqdGkiOiIyMmU3OGNjNy1hYTI2LTQ2YWUtYWRlZC0xN2FhZmUwZWQ3MzIiLCJleHAiOjE3MDMwMjQ1NDUsInR5cGUiOiJyZWZyZXNoIiwiYWNjZXNzX2p0aSI6IjM2OTMyNWM5LWVhYjEtNDJhOC1hYWE1LWM5NDM1MDFjZGIzNCJ9.Qi5ddtFyNcCZ3mq9ehQycpRAXtGbIXn34kQa38Hn8vU",
-#     "token_type": "bearer"
-# }

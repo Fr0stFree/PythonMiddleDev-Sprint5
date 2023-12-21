@@ -14,9 +14,9 @@ router = APIRouter()
 @router.get(
     "/{film_id}",
     description="Returns information about a specific film by ID",
+    dependencies=[Depends(security_jwt)]
 )
 async def film_details(
-    user: Annotated[dict, Depends(security_jwt)],
     film_id: UUID = Path(...), film_service: FilmService = Depends(FilmService.get_instance)
 ) -> DetailedFilm:
     film = await film_service.get_by_id(film_id)
@@ -33,9 +33,9 @@ async def film_details(
 @router.get(
     "/",
     description="Returns a list films",
+    dependencies=[Depends(security_jwt)]
 )
 async def film_list(
-    user: Annotated[dict, Depends(security_jwt)],
     search: dict = Depends(get_search_query),
     sort: Annotated[Literal["imdb_rating:asc", "imdb_rating:desc"], Query()] = "imdb_rating:asc",
     film_service: FilmService = Depends(FilmService.get_instance),

@@ -15,9 +15,9 @@ router = APIRouter()
 @router.get(
     "/{person_id}",
     description="Returns information about a specific person by ID",
+    dependencies=[Depends(security_jwt)]
 )
 async def person_details(
-    user: Annotated[dict, Depends(security_jwt)],
     person_id: UUID = Path(...),
     person_service: PersonService = Depends(PersonService.get_instance),
 ) -> DetailedPerson:
@@ -31,9 +31,9 @@ async def person_details(
 @router.get(
     "/",
     description="Returns a list persons",
+    dependencies=[Depends(security_jwt)]
 )
 async def person_list(
-    user: Annotated[dict, Depends(security_jwt)],
     search: dict = Depends(get_search_query_by_name),
     pagination_params: dict = Depends(get_pagination_params),
     person_service: PersonService = Depends(PersonService.get_instance),
@@ -46,9 +46,9 @@ async def person_list(
     "/{person_id}/films",
     summary="Films by person ID",
     description="Returns a list of films for a specific person by ID",
+    dependencies=[Depends(security_jwt)]
 )
 async def person_films(
-    user: Annotated[dict, Depends(security_jwt)],
     person_id: UUID = Path(...),
     person_service: PersonService = Depends(PersonService.get_instance),
     film_service: FilmService = Depends(FilmService.get_instance),

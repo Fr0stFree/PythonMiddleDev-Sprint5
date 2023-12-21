@@ -14,9 +14,9 @@ router = APIRouter()
 @router.get(
     "/{genre_id}",
     description="Returns information about a specific genre by ID",
+    dependencies=[Depends(security_jwt)]
 )
 async def genre_details(
-    user: Annotated[dict, Depends(security_jwt)],
     genre_id: UUID = Path(...), genre_service: GenreService = Depends(GenreService.get_instance)
 ) -> DetailedGenre:
     genre = await genre_service.get_by_id(genre_id)
@@ -29,9 +29,9 @@ async def genre_details(
 @router.get(
     "/",
     description="Returns a list genres",
+    dependencies=[Depends(security_jwt)]
 )
 async def genre_list(
-    user: Annotated[dict, Depends(security_jwt)],
     search: dict = Depends(get_search_query_by_name),
     genre_service: GenreService = Depends(GenreService.get_instance),
     pagination_params: dict = Depends(get_pagination_params),
