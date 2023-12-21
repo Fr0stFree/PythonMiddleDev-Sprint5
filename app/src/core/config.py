@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     elastic_host: str = Field(..., env="ELASTIC_HOST")
     elastic_port: int = Field(..., env="ELASTIC_PORT")
 
+    jwt_secret_key: str = Field(default="SOMETHING_REALLY_SECRET", env="SECRET_KEY")
+    jwt_algorithm: str = Field(default="HS256", env="ENCRYPTION_ALGORITHM")
+
     logging_config.dictConfig(LOGGING)
 
     class Config:

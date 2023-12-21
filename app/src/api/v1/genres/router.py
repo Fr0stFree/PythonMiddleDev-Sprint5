@@ -1,9 +1,10 @@
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from services import GenreService
-
+from core.auth import security_jwt
 from api.v1.dependencies import get_pagination_params, get_search_query_by_name
 from .schemas import DetailedGenre, ShortenedGenre
 
@@ -13,6 +14,7 @@ router = APIRouter()
 @router.get(
     "/{genre_id}",
     description="Returns information about a specific genre by ID",
+    dependencies=[Depends(security_jwt)]
 )
 async def genre_details(
     genre_id: UUID = Path(...), genre_service: GenreService = Depends(GenreService.get_instance)
@@ -27,6 +29,7 @@ async def genre_details(
 @router.get(
     "/",
     description="Returns a list genres",
+    dependencies=[Depends(security_jwt)]
 )
 async def genre_list(
     search: dict = Depends(get_search_query_by_name),
